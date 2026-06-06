@@ -11,7 +11,7 @@ class Controller_tb extends AnyFlatSpec with ChiselScalatestTester {
 
   it should " " in {
 
-    test(new Controller(1, 1, 1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+    test(new Controller(1, 1, 1, 1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
       resetDUT(dut, maxTimeout)
 
     }

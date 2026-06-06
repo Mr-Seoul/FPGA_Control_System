@@ -7,7 +7,8 @@ object config {
   val width = 16
   val modeFreq = 200000000
   val blinkFreq = 50000000
-  val accumulatorN = 64
+  val errorPeriod = 64
+  val smootheningPeriod = 64
 }
 
 class ControllerIO() extends Bundle {
@@ -21,16 +22,21 @@ class ControllerIO() extends Bundle {
   val an = Output(UInt(4.W))
 }
 
-//To do: Add FP / UInt, and add LUT for input DAC to temperature. Note that the input is a FP (write a script to automatically generate temp to voltage convertion), and the output should be a FP from -0 to 128 degrees (4 bits of decimal precicion)
+//To do: Add FP / UInt, and add LUT for input DAC to temperature. Use Q8.4F for FP. Note that the input is a FP (write a script to automatically generate temp to voltage convertion), and the output should be a FP from -0 to 128 degrees (4 bits of decimal precicion)
 //Go through project and decide how much precision is needed everywhere. The response of the PID should be a FP from 0 to 1. Be carefull of overflow in the PID.
-class Controller(modeFreq : Int, blinkFreq : Int, accumulatorN : Int) extends Module {
+class Controller(modeFreq : Int, blinkFreq : Int, errorPeriod : Int, smoothingPeriod : Int) extends Module {
   val io = IO(new ControllerIO())
 
   val target = RegNext(io.target)
   val cur = RegNext(io.cur)
 
+  val inputSmoothener = Module(new Accumulator(smoothingPeriod))
+  inputSmoothener.io.in := (cur >> log2Ceil(smoothingPeriod))
+  inputSmoothener.io.clear := 0.B
+
+
   val display = Module(new Display(modeFreq, blinkFreq))
-  display.io.currentTemp := cur
+  display.io.currentTemp := inputSmoothener.io.out
   display.io.targetTemp := target
   io.sseg := display.io.sseg
   io.an := display.io.an
@@ -38,24 +44,29 @@ class Controller(modeFreq : Int, blinkFreq : Int, accumulatorN : Int) extends Mo
   val e = Wire(SInt(config.width.W))
   e := target - cur
 
-  val pid = Module(new PID(accumulatorN))
+  val pid = Module(new PID(errorPeriod))
   pid.io.P := 1.S(config.width.W)
   pid.io.I := 1.S(config.width.W)
   pid.io.D := 1.S(config.width.W)
   pid.io.e := e
 
   val response = pid.io.response.asUInt
-  val inverseResponse = -1.S(config.width.W)*response.asUInt
+  val inverseResponse = (-1.S(config.width.W)*response).asUInt
 
   val heatingPWM = Module(new PWM((1 << (config.width-1))-1))
   val coolingPWM = Module(new PWM((1 << (config.width-1))-1))
   heatingPWM.io.in := response
   coolingPWM.io.in := inverseResponse
 
-  io.heatingResponse := Mux(pid.io.response > 0.S(config.width.W), heatingPWM.io.out, 0.B)
-  io.coolingResponse := Mux(pid.io.response < 0.S(config.width.W), coolingPWM.io.out, 0.B)
+  when (inputSmoothener.io.valid) {
+    io.heatingResponse := 0.B
+    io.coolingResponse := 0.B
+  } .otherwise {
+    io.heatingResponse := Mux(pid.io.response > 0.S(config.width.W), heatingPWM.io.out, 0.B)
+    io.coolingResponse := Mux(pid.io.response < 0.S(config.width.W), coolingPWM.io.out, 0.B)
+  }
 }
 
 object Controller extends App {
-  emitVerilog(new Controller(config.modeFreq, config.blinkFreq, config.accumulatorN))
+  emitVerilog(new Controller(config.modeFreq, config.blinkFreq, config.errorPeriod, config.smootheningPeriod))
 }

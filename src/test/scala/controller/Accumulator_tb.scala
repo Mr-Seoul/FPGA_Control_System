@@ -30,11 +30,11 @@ class Accumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
           resetDUT(dut, maxTimeout)
           var tot = 0
           for (i <- input) {
-            dut.io.next.poke(i.S)
+            dut.io.in.poke(i.S)
             tot += i
             dut.clock.step()
           }
-          dut.io.tot.expect(tot.S)
+          dut.io.out.expect(tot.S)
         }
       }
     }
@@ -58,15 +58,15 @@ class Accumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
         test(new Accumulator(size)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           for (i <- input) {
-            dut.io.next.poke(i.S)
+            dut.io.in.poke(i.S)
             dut.clock.step()
           }
           dut.io.clear.poke(1.B)
-          dut.io.next.poke(0.S)
+          dut.io.in.poke(0.S)
           dut.clock.step()
           dut.io.clear.poke(0.B)
           dut.clock.step()
-          dut.io.tot.expect(0.S)
+          dut.io.out.expect(0.S)
         }
       }
     }
