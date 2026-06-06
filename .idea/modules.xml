@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.iml" filepath="$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.%NAME%-build.iml" filepath="$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.%NAME%-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.main.iml" filepath="$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.test.iml" filepath="$PROJECT_DIR$/.idea/modules/FPGA_Control_System/%NAME%.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FPGA_Control_System.iml" filepath="$PROJECT_DIR$/FPGA_Control_System.iml" />
+    </modules>
+  </component>
+</project>
