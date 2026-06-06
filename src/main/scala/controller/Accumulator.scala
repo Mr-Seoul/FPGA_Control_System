@@ -16,13 +16,12 @@ class Accumulator(n : Int) extends Module {
   val tot = RegInit(0.S((config.width*(log2Ceil(n)+1)).W))
   val regChain = RegInit(VecInit(Seq.fill(n)(0.S(config.width.W))))
 
-  val cnt = RegInit(0.U(log2Ceil(n+1)+1))
-  when (cnt < n.U) {
-    io.valid := 0.B
-    cnt := cnt + 1.U
-  } .otherwise {
-    io.valid := 1.B
+  val full = RegInit(0.B)
+  val (cnt, cntWrap) = Counter(1.B, n)
+  when (cntWrap) {
+    full := 1.B
   }
+  io.valid := full
 
   regChain(0) := io.in
   for (i <- 1 until n) {

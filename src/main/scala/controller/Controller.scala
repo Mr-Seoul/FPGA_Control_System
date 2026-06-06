@@ -23,7 +23,7 @@ class ControllerIO() extends Bundle {
 }
 
 //To do: Add FP / UInt, and add LUT for input DAC to temperature. Use Q8.4F for FP. Note that the input is a FP (write a script to automatically generate temp to voltage convertion), and the output should be a FP from -0 to 128 degrees (4 bits of decimal precicion)
-//Go through project and decide how much precision is needed everywhere. The response of the PID should be a FP from 0 to 1. Be carefull of overflow in the PID.
+//Go through project and decide how much precision is needed everywhere. The response of the PID should be a FP from 0 to 1 (Q1.11F). Be carefull of overflow in the PID.
 class Controller(modeFreq : Int, blinkFreq : Int, errorPeriod : Int, smoothingPeriod : Int) extends Module {
   val io = IO(new ControllerIO())
 

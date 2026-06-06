@@ -1,4 +1,3 @@
-
 package controller
 
 import chisel3._
@@ -17,6 +16,3 @@ class Controller_tb extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 }
-
-
-
