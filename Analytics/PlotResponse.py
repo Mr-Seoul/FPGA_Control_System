@@ -11,7 +11,6 @@ async def generate_clock(dut):
         dut.clk.value = 1
         await Timer(1, unit="ns")
 
-
 @cocotb.test()
 async def plotResponse(dut):
     """Plot the response of the PID"""
