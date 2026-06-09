@@ -107,8 +107,8 @@ roomTemperature = 21 #Assumed to be constant
 heatTransferRate = 10 #Idk Guess
 area = 0.2*0.2*3.14 #MeasureBucket
 volume = 10
-minCoolingPower = 5*5*0.1 #This has to be the effective heating power
-maxCoolingPower = 12*5*0.1 #This has to be the effective heating power
+minCoolingPower = 5*5*0.1 #This has to be the effective cooling power
+maxCoolingPower = 12*5*0.1 #This has to be the effective cooling power
 specificHeat = 4184
 controllerDelay = 1000 #Delay in seconds
 
