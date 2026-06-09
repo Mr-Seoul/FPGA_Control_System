@@ -14,8 +14,8 @@ class System:
     def setController(self, controller):
         self.controller = controller
 
-    def setHeater(self, heater):
-        self.heater = heater
+    def setResponse(self, response):
+        self.response = response
 
     def setTemperature(self, temperature):
         self.temperature = temperature
@@ -35,9 +35,33 @@ class System:
             self.controller.step(self.getDelayedTemperature(controllerDelay))
 
     def updateSystem(self, controllerDelay):
-        self.temperature += (self.controller.getResponse()*self.heater.getPower())/(self.specificHeat*self.volume)
+        self.temperature += (self.response.getResponse(self.getTemperature()))/(self.specificHeat*self.volume)
         self.temperatures.append(self.temperature)
         self.controller.step(self.getDelayedTemperature(controllerDelay))
+
+class SystemResponse:
+    def setCooler(self, cooler):
+        self.cooler = cooler
+
+    def setController(self, controller):
+        self.controller = controller
+
+    def setConvection(self, convection):
+        self.convection = convection
+
+    def getResponse(self, temperature):
+        coolerResponse = -self.cooler.getPower(clamp(self.controller.getResponse(),0,1))
+        convectionResponse = self.convection.getPower(temperature)
+        return coolerResponse + convectionResponse
+
+class Convection:
+    def __init__(self, roomTemperature, area, heatTransferRate):
+        self.roomTemperature = roomTemperature
+        self.area = area
+        self.heatTransferRate = heatTransferRate
+
+    def getPower(self, curTemperature):
+        return (self.roomTemperature - curTemperature)*self.area*self.heatTransferRate
 
 class Controller:
     def __init__(self, target, P, I, D, IWindow):
@@ -60,46 +84,68 @@ class Controller:
             self.totError -= self.errors[0]
             self.errors.popleft()
 
-    def printIError(self):
-        print(self.totError)
+    def printErrors(self):
+        print(self.errors[-1], self.totError, self.errors[-1] - self.errors[-2])
 
-class Heater:
+class heatPump:
     def __init__(self, power):
         self.power = power
 
-    def getPower(self):
-        return self.power
-#Convection
+    def getPower(self, response):
+        return self.power*response
+
+class ShittyCoolingRelay:
+    def __init__(self, minPower, maxPower):
+        self.minPower = minPower
+        self.maxPower = maxPower
+
+    def getPower(self, response):
+        return (self.maxPower - self.minPower) * response + self.minPower
+
 #System variables
-initTemp = 21
+roomTemperature = 21 #Assumed to be constant
+heatTransferRate = 10 #Idk Guess
+area = 0.2*0.2*3.14 #MeasureBucket
 volume = 10
-heatingPower = -13 #This has to be the effective heating power
+minCoolingPower = 5*5*0.1 #This has to be the effective heating power
+maxCoolingPower = 12*5*0.1 #This has to be the effective heating power
 specificHeat = 4184
 controllerDelay = 1000 #Delay in seconds
 
 targetTemp = 18
-P = 0.01
-I = 0.001
-D = 0.001
+P = 0.5
+I = 0.012
+D = -0.1
 
 IWindow = 1000
 
-simulationTime = 100000 #Total simulation time in seconds
+simulationTime = 200000 #Total simulation time in seconds
 
-sys = System(initTemp, volume, specificHeat)
-heater = Heater(heatingPower)
+sys = System(roomTemperature, volume, specificHeat)
+cooler = ShittyCoolingRelay(minCoolingPower,maxCoolingPower)
 
 controller = Controller(targetTemp, P, I, D, IWindow)
+convection = Convection(roomTemperature, area, heatTransferRate)
 
-sys.setHeater(heater)
+response = SystemResponse()
+response.setCooler(cooler)
+response.setConvection(convection)
+response.setController(controller)
+
+sys.setResponse(response)
 sys.setController(controller)
 
 temperatures = []
-sys.initSystem(5)
+events = []
+eventIndex = 0
+sys.initSystem(2)
 for i in range(simulationTime):
     temperatures.append(sys.getTemperature())
     sys.updateSystem(controllerDelay)
-    controller.printIError()
+    if eventIndex < len(events) and events[eventIndex][0] == i:
+        sys.setTemperature(events[eventIndex][1])
+        eventIndex += 1
 
 plt.plot(temperatures)
+plt.axhline(y=targetTemp, color='r', linestyle='--', label='Target Temp')
 plt.show()
