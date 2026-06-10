@@ -19,6 +19,9 @@ package object testSuite {
   }
 
   def randNum(minNum : Int, maxNum : Int): Int = {
+    if (minNum == maxNum) {
+      return minNum
+    }
     return Random.nextInt(maxNum - minNum) + minNum
   }
 

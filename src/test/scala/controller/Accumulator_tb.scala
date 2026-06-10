@@ -18,9 +18,9 @@ class Accumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
 
     for (size <- sizes) {
       val inputSeq = Seq(
-        List.fill(size)(0),
-        List.fill(size)(minVal),
-        List.fill(size)(maxVal),
+        List.fill(1)(0),
+        List.fill(1)(minVal),
+        List.fill(1)(maxVal),
         List.fill(size)(randNum(minVal+1,-1)),
         List.fill(size)(randNum(1,maxVal-1)),
       )

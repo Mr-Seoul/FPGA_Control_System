@@ -30,7 +30,7 @@ class Controller(modeFreq : Int, blinkFreq : Int, errorPeriod : Int, smoothingPe
   val target = RegNext(io.target)
   val cur = RegNext(io.cur)
 
-  val adc = Module(new ADC(8,1))
+  val adc = Module(new ADC(8,1300))
   adc.io.in := 0.U(8.W)
 
   val inputSmoothener = Module(new Accumulator(smoothingPeriod))

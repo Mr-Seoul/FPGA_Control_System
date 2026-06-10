@@ -21,7 +21,7 @@ class ADC(n : Int, sampleCycles : Int) extends Module {
   val incBit = Wire(Bool())
   incBit := 0.B
 
-  val (sampleCnt, sampleWrap)= Counter(state === sMeasure, n)
+  val (sampleCnt, sampleWrap)= Counter(state === sMeasure, sampleCycles)
   val (bitCnt, bitWrap)= Counter(incBit, n)
   val regOutput = RegInit(0.U(n.W))
   val validOut = RegInit(0.B)

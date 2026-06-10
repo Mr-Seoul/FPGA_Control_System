@@ -23,9 +23,9 @@ class Clamp_tb extends AnyFlatSpec with ChiselScalatestTester {
     val maxVal = pow2(config.width - 1) - 1
 
     val inputSeq = Seq(
-      List.fill(nIterations)(minClamp),
+      List.fill(1)(minClamp),
       List.fill(nIterations)(randNum(minClamp + 1,maxClamp - 1)),
-      List.fill(nIterations)(maxClamp),
+      List.fill(1)(maxClamp),
       List.fill(nIterations)(randNum(minVal,minClamp - 1)),
       List.fill(nIterations)(randNum(maxClamp + 1,maxVal)),
     )

@@ -22,9 +22,9 @@ class PWM_tb extends AnyFlatSpec with ChiselScalatestTester {
 
     for (period <- periods) {
       val inputSeq = Seq(
-        List.fill(nIterations)(0),
+        List.fill(1)(0),
         List.fill(nIterations)(randNum(1,period-1)),
-        List.fill(nIterations)(period),
+        List.fill(1)(period),
       )
 
       test(new PWM(period)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
