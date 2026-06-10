@@ -24,7 +24,6 @@ package object testSuite {
 
   def randNums(minNum : Int, maxNum : Int, n : Int): Set[Int] = {
     var res = Set.empty[Int]
-    Set.empty[Int]
     while (res.size < n) {
       val newNum = randNum(minNum,maxNum)
       if (!res.contains(newNum)) {

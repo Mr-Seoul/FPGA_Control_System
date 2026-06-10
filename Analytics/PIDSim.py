@@ -104,25 +104,26 @@ class ShittyCoolingRelay:
 
 #System variables
 roomTemperature = 21 #Assumed to be constant
-heatTransferRate = 10 #Idk Guess
-area = 0.2*0.2*3.14 #MeasureBucket
+heatTransferRate = 6.93
+area = 0.1*0.1*3.14 #MeasureBucket
 volume = 10
-minCoolingPower = 5*5*0.1 #This has to be the effective cooling power
-maxCoolingPower = 12*5*0.1 #This has to be the effective cooling power
+coolingEfficiency = 0.15
+minCoolingPower = 5*5 #This has to be the effective cooling power
+maxCoolingPower = 12*5 #This has to be the effective cooling power
 specificHeat = 4184
 controllerDelay = 1000 #Delay in seconds
 
 targetTemp = 18
-P = 0.5
-I = 0.012
+P = 1
+I = 0.0015
 D = -0.1
 
-IWindow = 1000
+IWindow = 1024
 
-simulationTime = 200000 #Total simulation time in seconds
+simulationTime = 50000 #Total simulation time in seconds
 
 sys = System(roomTemperature, volume, specificHeat)
-cooler = ShittyCoolingRelay(minCoolingPower,maxCoolingPower)
+cooler = ShittyCoolingRelay(minCoolingPower*coolingEfficiency,maxCoolingPower*coolingEfficiency)
 
 controller = Controller(targetTemp, P, I, D, IWindow)
 convection = Convection(roomTemperature, area, heatTransferRate)
