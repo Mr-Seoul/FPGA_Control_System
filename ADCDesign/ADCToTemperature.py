@@ -1,0 +1,1 @@
+#Make a script that outputs a list of adc values to their respective temperatures

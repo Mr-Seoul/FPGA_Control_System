@@ -13,6 +13,8 @@ class ADCIO(n : Int) extends Bundle {
 class ADC(n : Int, sampleCycles : Int) extends Module {
   val io = IO(new ADCIO(n))
 
+  val in = RegNext(RegNext(io.in))
+
   val sMeasure :: sUpdate :: sOutput :: Nil = Enum(3)
   val state = RegInit(sMeasure)
 
@@ -31,7 +33,7 @@ class ADC(n : Int, sampleCycles : Int) extends Module {
     is(sMeasure) {
       when(sampleWrap) {
         state := sUpdate
-        curTest((n-1).U - bitCnt) := io.in
+        curTest((n-1).U - bitCnt) := in
       } .otherwise {
         curTest((n-1).U - bitCnt) := 1.B
       }
@@ -57,4 +59,8 @@ class ADC(n : Int, sampleCycles : Int) extends Module {
 
   io.valid := validOut
   io.out := regOutput
+}
+
+object ADC extends App {
+  emitVerilog(new ADC(8,800))
 }

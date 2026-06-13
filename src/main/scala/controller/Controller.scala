@@ -70,6 +70,6 @@ class Controller(modeFreq : Int, blinkFreq : Int, errorPeriod : Int, smoothingPe
   }
 }
 
-object Controller extends App {
-  emitVerilog(new Controller(config.modeFreq, config.blinkFreq, config.errorPeriod, config.smootheningPeriod))
-}
+///object Controller extends App {
+//  emitVerilog(new Controller(config.modeFreq, config.blinkFreq, config.errorPeriod, config.smootheningPeriod))
+//}

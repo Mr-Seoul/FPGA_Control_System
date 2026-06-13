@@ -104,7 +104,7 @@ class ShittyCoolingRelay:
 
 #System variables
 roomTemperature = 21 #Assumed to be constant
-heatTransferRate = 6.93
+heatTransferRate = 50
 area = 0.1*0.1*3.14 #MeasureBucket
 volume = 10
 coolingEfficiency = 0.15
