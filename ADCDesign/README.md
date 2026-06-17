@@ -64,8 +64,9 @@ This shows that the DAC is always within 2.5 mV, which is perfect for our use ca
 ## Mistake
 We mistakenly used the formula $ \frac{ADC}{255}*3300mV + 6.44mV$ rather than $ \frac{ADC}{256}*3300mV + 6.44mV$.
 Instead of making another PCB, we decided to make a LUT in software to map the read voltage to the correct temperature.
-This approach still works as each bin (voltage per bit) is now 12.9+-2mV mV rather than 12.8+-2mV mVm which is still very linear.
+This approach still works as each bin (voltage per bit) is now 12.9+-2mV mV rather than 12.8+-2mV mVm which is still very reliable.
 The last bit is now a bit comprimised (only spans 6.5 mV), but since in our project the voltage never should go that high, this fix should work for this project.
+For next time, we should definitely use the correct formula as it would fix the issue with the reduced range for the last bit.
 
 # Final Result
 
