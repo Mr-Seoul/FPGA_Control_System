@@ -61,6 +61,6 @@ class ADC(n : Int, sampleCycles : Int) extends Module {
   io.out := regOutput
 }
 
-object ADC extends App {
-  emitVerilog(new ADC(8,800))
-}
+//object ADC extends App {
+//  emitVerilog(new ADC(8,800))
+//}

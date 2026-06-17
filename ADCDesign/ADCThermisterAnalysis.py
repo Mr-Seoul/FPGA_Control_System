@@ -9,7 +9,7 @@ temperatureData = [i for i in range(minTemp,maxTemp+1)]
 
 voltage = 3.3
 RSetA = 16600
-ADCBits = 6
+ADCBits = 8
 
 def voltageDivider(voltage, rSet, temp):
     resTot = rSet + tempToRes(temp)
