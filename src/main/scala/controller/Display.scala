@@ -1,6 +1,7 @@
 package controller
 
 import chisel3._
+import chisel3.experimental.FixedPoint
 import chisel3.util._
 
 object displayModes extends ChiselEnum {
@@ -8,8 +9,8 @@ object displayModes extends ChiselEnum {
 }
 
 class DisplayIO() extends Bundle {
-  val currentTemp = Input(SInt(config.width.W))
-  val targetTemp = Input(SInt(config.width.W))
+  val currentTemp = Input(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
+  val targetTemp = Input(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
 
   val sseg = Output(UInt(7.W))
   val an = Output(UInt(4.W))
@@ -17,6 +18,9 @@ class DisplayIO() extends Bundle {
 
 class Display(modeFreq : Int, blinkFreq : Int) extends Module {
   val io = IO(new DisplayIO())
+
+  val currentTemp = (io.currentTemp>>config.decimalWidth)
+  val targetTemp = (io.targetTemp>>config.decimalWidth)
 
   val curMode = RegInit(displayModes.current)
   val (modeCnt, modeCntWrap) = Counter(1.B, modeFreq)
@@ -36,20 +40,20 @@ class Display(modeFreq : Int, blinkFreq : Int) extends Module {
   val curMessage = Wire(Vec(4, UInt(7.W)))
   val leadingChar = WireDefault(' '.U(7.W))
   val Clamp = Module(new Clamp(0, 99))
-  val clampIn = WireDefault(0.S(config.width.W))
+  val clampIn = WireDefault(0.F(config.fixedWidth.W, config.decimalWidth.BP))
 
   switch (curMode) {
     is (displayModes.current) {
       leadingChar := 'C'.U
-      clampIn := io.currentTemp
+      clampIn := currentTemp
     }
     is (displayModes.target) {
       leadingChar := 'T'.U
-      clampIn := io.targetTemp
+      clampIn := targetTemp
     }
   }
 
-  Clamp.io.in := clampIn
+  Clamp.io.in := (clampIn >> config.decimalWidth).asSInt
   val curNumber = Clamp.io.clampedValue.asUInt
 
   curMessage(0) := leadingChar

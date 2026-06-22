@@ -38,7 +38,7 @@ class ADC_tb extends AnyFlatSpec with ChiselScalatestTester {
 
             for (i <- input) {
               while (!dut.io.valid.peekBoolean()) {
-                dut.io.in.poke((i >= dut.io.DACOut.peekInt()).B)
+                dut.io.in.poke((i > dut.io.DACOut.peekInt()).B)
                 dut.clock.step()
               }
               dut.io.out.expect(i.U)

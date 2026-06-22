@@ -13,13 +13,13 @@ class ADCIO(n : Int) extends Bundle {
 class ADC(n : Int, sampleCycles : Int) extends Module {
   val io = IO(new ADCIO(n))
 
-  val in = RegNext(RegNext(io.in))
+  val in = io.in
 
   val sMeasure :: sUpdate :: sOutput :: Nil = Enum(3)
   val state = RegInit(sMeasure)
 
   val curTest = RegInit(VecInit(Seq.fill(n)(0.B)))
-  io.DACOut := curTest.asUInt
+  io.DACOut := curTest.asUInt - 1.U //Due to positive voltage biasing
   val incBit = Wire(Bool())
   incBit := 0.B
 

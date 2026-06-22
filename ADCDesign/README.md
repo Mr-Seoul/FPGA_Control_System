@@ -36,6 +36,9 @@ Halfway through soldering, we realized that the tolerances (+/- 5%) would destro
 We switches to 820 Ohm resistors with +/- 1% tolerances.
 We also introduced a 9th bit to the DAC which we permanently toggled on. 
 This would bias the DAC voltage by 0.5 bits, which would allow us to convert the ADC into a rounding ADC, halving the absolute error from \[0, 1 bit], to \[-0.5 bit, 0.5 bit].
+That does however introduce a 257th range (fencepost theorem). We solved that by making 254 map to 2954, which would give 2 0.5LSB ranges on the edges, and 1.01 LSB ranges in the middle.
+We fixed the slightly different distribution with a lookup table on the FPGA after. That gives the best of both worlds, a completely linear, rounding 8 bit ADC.
+
 This worked, but we noticed some non-linearity and a large dc offset.
 ![InitialLinearity.png](InitialLinearity.png)
 
@@ -53,7 +56,6 @@ That did come at the cost of increased propogation time in the DAC, which is an 
 That gave us the following graph:
 ![Rev2DACLinearity.png](Rev2DACLinearity.png)
 
-
 ## Iteration 4
 The main issue was the 8th bit delivering too little voltage, and the 16 / 64 bit delivering too much. 
 Hence we reduced the resistance on the 8th bit 2R resistors and increased on the 5th/7th bit 2R resistors, which gave us the following errors:
@@ -61,12 +63,9 @@ Hence we reduced the resistance on the 8th bit 2R resistors and increased on the
 
 This shows that the DAC is always within 2.5 mV, which is perfect for our use case, and we can go on to the comparator installation.
 
-## Mistake
-We mistakenly used the formula $ \frac{ADC}{255}*3300mV + 6.44mV$ rather than $ \frac{ADC}{256}*3300mV + 6.44mV$.
-Instead of making another PCB, we decided to make a LUT in software to map the read voltage to the correct temperature.
-This approach still works as each bin (voltage per bit) is now 12.9+-2mV mV rather than 12.8+-2mV mVm which is still very reliable.
-The last bit is now a bit comprimised (only spans 6.5 mV), but since in our project the voltage never should go that high, this fix should work for this project.
-For next time, we should definitely use the correct formula as it would fix the issue with the reduced range for the last bit.
+## Iteration 5
+We installed the lm393. After doing testing, we noticed severe non-linearity despite the previous validation of the DAC. That is likely that the couple of microAmps the lm393 draws distortes the DAC, hence we installed some voltage follower op-amps to isolate the DAC.
+
 
 # Final Result
 

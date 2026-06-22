@@ -36,9 +36,10 @@ Data = {
 }
 
 def expected(ADC):
-    return 3300*((ADC)/255)+6.44
-    #We realized this formula was a mistake later on (should be /256).
-    #We fixed this using a lookup table in software later as the DAC is still very linear
+    return 3300*((ADC)/255)+6.47
+    #Note that this is not the textbook formula, we explained this choice in the readme.
+    #In short, if we did / 256, we would have 257 ranges which can't be read by a standard SAR algorithm.
+    #We solved that with 2 0.5LSB ranges on the edges and the rest being slightly larger than 1 LSB.
 
 xData = [i for i in Data.keys()]
 yData = [Data[i] for i in xData]
@@ -46,11 +47,10 @@ yData = [Data[i] for i in xData]
 expectedYdata = [expected(i) for i in xData]
 diffData = [Data[i] - expected(i) for i in xData]
 
-plt.plot(xData, yData)
-plt.plot(xData, expectedYdata)
-plt.show()
-
-plt.plot(xData, yData)
+plt.plot(xData, yData,label="DAC response (instead of ADC \nas we don't have \naccurate power supplies, \nbut accurate multimeters)")
+plt.xlabel("Digital input (unitless)")
+plt.ylabel("Voltage (mV)")
+plt.legend(loc="upper left")
 plt.plot(xData, expectedYdata)
 plt.show()
 
