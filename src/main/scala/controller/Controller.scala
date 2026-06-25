@@ -6,13 +6,13 @@ import chisel3.util._
 
 object config {
   val ADCWidth = 8
-  val samplingPeriod = 250
+  val samplingPeriod = 650
 
   val width = 16
-  val modeFreq = 200000000
-  val blinkFreq = 50000000
+  val modePeriod = 200000000
+  val blinkPeriod = 50000000
   val errorPeriod = 64
-  val smootheningPeriod = 64
+  val smootheningPeriod = 256
 
   val fixedWidth = 32
   val decimalWidth = 24
@@ -21,10 +21,21 @@ object config {
 class ControllerIO() extends Bundle {
   val ADCIn = Input(Bool())
   val DACOut = Output(UInt(8.W))
+  val ADCOut = Output(UInt(8.W))
   val coolingResponse = Output(Bool())
 
   val sseg = Output(UInt(7.W))
   val an = Output(UInt(4.W))
+
+  val packetUpdate = Output(Bool())
+
+  val sck = Input(Bool())
+  val csN = Input(Bool())
+  val mosi = Input(Bool())
+  val miso = Output(Bool())
+
+  val csNOut = Output(Bool())
+  val sckOut = Output(Bool())
 }
 
 class Controller() extends Module {
@@ -33,12 +44,14 @@ class Controller() extends Module {
   val synchronizedReset = RegNext(RegNext(reset))
 
   withReset(synchronizedReset.asAsyncReset) {
-    val target = 18.F(config.fixedWidth.W, config.decimalWidth.BP)
-    val ADCIn = RegNext(RegNext(io.ADCIn))
+    val ADCIn = RegNext(RegNext(io.ADCIn, 1.B), 0.B)
+    val targetTemp = RegInit(18.F(config.fixedWidth.W,config.decimalWidth.BP))
+    val enable = RegInit(1.B)
 
     val adc = Module(new ADC(config.ADCWidth,config.samplingPeriod))
     adc.io.in := ADCIn
     io.DACOut := adc.io.DACOut
+
 
     val inputSmoothener = Module(new Accumulator(config.smootheningPeriod))
     inputSmoothener.io.in := adc.io.out
@@ -48,32 +61,71 @@ class Controller() extends Module {
     tempLookup.io.in := inputSmoothener.io.out >> (log2Ceil(config.smootheningPeriod))
     val curTemp = tempLookup.io.out
 
-    val display = Module(new Display(config.modeFreq, config.blinkFreq))
-    display.io.currentTemp := curTemp
-    display.io.targetTemp := target
+    val (adcCnt, adcWrap) = Counter(1.B,50000000)
+    val regADC = RegInit(0.U(8.W))
+    when (adcWrap) {
+      regADC := inputSmoothener.io.out >> (log2Ceil(config.smootheningPeriod))
+    }
+    io.ADCOut := regADC
+
+    val display = Module(new Display(config.modePeriod, config.blinkPeriod))
+    val (curTempCnt, curTempWrap) = Counter(1.B,50000000)
+    val regCurTemp = RegInit(0.S(config.fixedWidth.W))
+    when (curTempWrap) {
+      regCurTemp := curTemp.asSInt
+    }
+    display.io.currentTemp := regCurTemp
+    val (targetTempCnt, targetTempWrap) = Counter(1.B,50000000)
+    val regTargetTemp = RegInit(0.S(config.fixedWidth.W))
+    when (targetTempWrap) {
+      regTargetTemp := targetTemp.asSInt
+    }
+    display.io.targetTemp := regTargetTemp
+    display.io.enable := enable
     io.sseg := display.io.sseg
     io.an := display.io.an
 
     val e = Wire(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
-    e := target - curTemp
+    e := curTemp - targetTemp
 
     val pid = Module(new PID(config.errorPeriod))
     pid.io.P := 1.F(config.fixedWidth.W, config.decimalWidth.BP)
-    pid.io.I := 1.F(config.fixedWidth.W, config.decimalWidth.BP)
-    pid.io.D := 1.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.I := 0.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.D := 0.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.e := e
 
-    val response = ((pid.io.response << (config.fixedWidth - config.decimalWidth - 1))(config.fixedWidth-1,0).asSInt>>(config.fixedWidth - config.decimalWidth - 1)).asUInt
-    val coolingPWM = Module(new PWM((1 << config.decimalWidth-1)-1))
+    val response = pid.io.response.asUInt
+    val coolingPWM = Module(new PWM((1 << config.decimalWidth)))
     coolingPWM.io.in := response
 
-    when (inputSmoothener.io.valid) {
-      io.coolingResponse := 0.B
-    } .otherwise {
+    val spi = Module(new SpiSlave())
+    val csNOut = RegNext(RegNext(io.csN,1.B),1.B)
+    val sckOut = RegNext(RegNext(io.sck,0.B), 0.B)
+    io.csNOut := csNOut
+    io.sckOut := sckOut
+    spi.io.sck := sckOut
+    spi.io.csN := csNOut
+    spi.io.mosi := RegNext(RegNext(io.mosi,0.B),0.B)
+
+    io.miso := spi.io.miso
+    io.packetUpdate := spi.io.packetUpdate
+
+    targetTemp := spi.io.data.setPoint.asFixedPoint(config.decimalWidth.BP)
+    enable := spi.io.data.enable
+    spi.io.data.temperature := curTemp.asSInt
+    spi.io.data.pEffort := pid.io.pResponse.asSInt
+    spi.io.data.iEffort := pid.io.iResponse.asSInt
+    spi.io.data.dEffort := pid.io.dResponse.asSInt
+    spi.io.data.totEffort := pid.io.response.asSInt
+
+    when (inputSmoothener.io.valid && enable) {
       io.coolingResponse := Mux(pid.io.response > 0.F(config.fixedWidth.W, config.decimalWidth.BP), coolingPWM.io.out, 0.B)
+    } .otherwise {
+      io.coolingResponse := 0.B
     }
   }
 }
+
 object Controller extends App {
   emitVerilog(new Controller())
 }

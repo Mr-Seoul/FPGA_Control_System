@@ -8,7 +8,8 @@
     "typeName":"controller.displayModes",
     "definition":{
       "current":0,
-      "target":1
+      "target":1,
+      "enable":2
     }
   },
   {
@@ -19,11 +20,5 @@
   {
     "class":"firrtl.transforms.BlackBoxTargetDirAnno",
     "targetDir":"."
-  },
-  {
-    "class":"firrtl.annotations.MemoryFileInlineAnnotation",
-    "target":"~Controller|TemperatureLookup>mem",
-    "filename":"lookup.mem",
-    "hexOrBinary":"h"
   }
 ]

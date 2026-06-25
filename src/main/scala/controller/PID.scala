@@ -11,6 +11,9 @@ class PIDIO() extends Bundle {
   val e = Input(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
 
   val response = Output(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
+  val pResponse = Output(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
+  val iResponse = Output(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
+  val dResponse = Output(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
 }
 
 class PID(errorPeriod : Int) extends Module {
@@ -29,7 +32,21 @@ class PID(errorPeriod : Int) extends Module {
   intE := accumulator.io.out.asFixedPoint(config.decimalWidth.BP)
   diffE := io.e - lastE
 
-  val res = io.P*propE + io.I*intE + io.D*diffE
+  val pResponse = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
+  val iResponse = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
+  val dResponse = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
+  pResponse := io.P*propE
+  iResponse := io.I*intE
+  dResponse := io.D*diffE
+  io.pResponse := pResponse
+  io.iResponse := iResponse
+  io.dResponse := dResponse
 
-  io.response := Mux(res < 0.F(config.fixedWidth.W,config.decimalWidth.BP), 0.F(config.fixedWidth.W,config.decimalWidth.BP), Mux(res > 1.F(config.fixedWidth.W,config.decimalWidth.BP), 1.F(config.fixedWidth.W,config.decimalWidth.BP), res))
+  val res = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
+  res := pResponse + iResponse + dResponse
+
+  val minResponse = 0.F(config.fixedWidth.W,config.decimalWidth.BP)
+  val maxResponse = 1.F(config.fixedWidth.W, config.decimalWidth.BP)
+
+  io.response := Mux(res < minResponse, minResponse, Mux(res > maxResponse, maxResponse, res))
 }

@@ -3,7 +3,9 @@ package controller
 import chisel3._
 import chisel3.util._
 import chisel3.experimental.FixedPoint
-import chisel3.util.experimental.loadMemoryFromFileInline
+import java.io.File
+
+import scala.io.Source
 
 class TemperatureLookupIO() extends Bundle {
   val in = Input(UInt(config.ADCWidth.W))
@@ -13,10 +15,18 @@ class TemperatureLookupIO() extends Bundle {
 class TemperatureLookup() extends Module {
   val io = IO(new TemperatureLookupIO())
 
-  val mem = SyncReadMem(256, FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
+  val file = new File("ADCDesign/lookup.mem")
+  require(file.exists(), s"Error: No file at ${file.getAbsolutePath}")
 
-  loadMemoryFromFileInline(mem, "lookup.mem")
+  val hexData = Source.fromFile(file).getLines().toList
+  val nums = hexData.map(line => BigInt(line.trim, 16))
 
-  io.out := mem.read(io.in)
+  val lookupData = nums.map{ value =>value.asUInt(32.W).asFixedPoint(24.BP)}
+
+  val table = VecInit(lookupData)
+
+  val regOut = table(io.in)
+
+  io.out := regOut
 
 }

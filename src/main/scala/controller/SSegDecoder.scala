@@ -14,7 +14,16 @@ class SSegDecoder() extends Module {
   val sevSeg = WireDefault(0.U(7.W))
 
   switch(io.in) {
-    is(32.U) { sevSeg := "b0000000".U } // ' '
+    is(0.U) { sevSeg := "b0111111".U } // '0'
+    is(1.U) { sevSeg := "b0000110".U } // '1'
+    is(2.U) { sevSeg := "b1011011".U } // '2'
+    is(3.U) { sevSeg := "b1001111".U } // '3'
+    is(4.U) { sevSeg := "b1100110".U } // '4'
+    is(5.U) { sevSeg := "b1101101".U } // '5'
+    is(6.U) { sevSeg := "b1111101".U } // '6'
+    is(7.U) { sevSeg := "b0000111".U } // '7'
+    is(8.U) { sevSeg := "b1111111".U } // '8'
+    is(9.U) { sevSeg := "b1101111".U } // '9'
 
     is(48.U) { sevSeg := "b0111111".U } // '0'
     is(49.U) { sevSeg := "b0000110".U } // '1'
@@ -27,7 +36,7 @@ class SSegDecoder() extends Module {
     is(56.U) { sevSeg := "b1111111".U } // '8'
     is(57.U) { sevSeg := "b1101111".U } // '9'
 
-    is(61.U) { sevSeg := "b1101111".U } // '='
+    is(61.U) { sevSeg := "b1001000".U } // '='
 
     is(65.U) { sevSeg := "b1110111".U } // 'A'
     is(66.U) { sevSeg := "b1111100".U } // 'B'
@@ -48,7 +57,7 @@ class SSegDecoder() extends Module {
     is(81.U) { sevSeg := "b1100111".U } // 'Q'
     is(82.U) { sevSeg := "b1010000".U } // 'R'
     is(83.U) { sevSeg := "b1101101".U } // 'S'
-    is(84.U) { sevSeg := "b1111000".U } // 'T'
+    is(84.U) { sevSeg := "b1110000".U } // 'T'
     is(85.U) { sevSeg := "b0111110".U } // 'U'
     is(86.U) { sevSeg := "b0011100".U } // 'V'
     is(87.U) { sevSeg := "b0111110".U } // 'W'
@@ -75,7 +84,7 @@ class SSegDecoder() extends Module {
     is(113.U) { sevSeg := "b1100111".U } // 'q'
     is(114.U) { sevSeg := "b1010000".U } // 'r'
     is(115.U) { sevSeg := "b1101101".U } // 's'
-    is(116.U) { sevSeg := "b1111000".U } // 't'
+    is(116.U) { sevSeg := "b1110000".U } // 't'
     is(117.U) { sevSeg := "b0011100".U } // 'v'
     is(118.U) { sevSeg := "b0011100".U } // 'w'
     is(119.U) { sevSeg := "b1110110".U } // 'x'
