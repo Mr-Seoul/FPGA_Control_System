@@ -9,12 +9,6 @@ class Clamp_tb extends AnyFlatSpec with ChiselScalatestTester {
   val maxTimeout = 2*nTests
   val nIterations = 5
 
-  def clamp(valueOf: Int, min: Int, max: Int): Int = {
-    if (valueOf < min) min
-    else if (valueOf > max) max
-    else valueOf
-  }
-
   it should "Clamp input" in {
     val minClamp = 0
     val maxClamp = 99
@@ -31,7 +25,7 @@ class Clamp_tb extends AnyFlatSpec with ChiselScalatestTester {
     )
 
     for (input <- inputSeq) {
-      test(new Clamp(minClamp, maxClamp)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      test(new Clamp(minClamp, maxClamp, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         resetDUT(dut, maxTimeout)
 
         for (i <- input) {
@@ -59,7 +53,7 @@ class Clamp_tb extends AnyFlatSpec with ChiselScalatestTester {
     )
 
     for (input <- inputSeq) {
-      test(new Clamp(minClamp, maxClamp)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+      test(new Clamp(minClamp, maxClamp, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
         resetDUT(dut, maxTimeout)
 
         for (i <- input) {

@@ -21,6 +21,6 @@ class ADCTest(n : Int, sampleCycles : Int) extends Module {
   }
 }
 
-//object ADCTest extends App {
-//  emitVerilog(new ADCTest(8,250))
-//}
+object ADCTest extends App {
+  emitVerilog(new ADCTest(8,250))
+}

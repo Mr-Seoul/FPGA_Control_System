@@ -27,7 +27,7 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
       )
 
       for (input <- inputSeq) {
-        test(new SAccumulator(size)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           var tot = 0
           for (i <- input) {
@@ -44,7 +44,6 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
   it should "clear when clear is asserted" in {
     val sizes = randNums(minSize, maxSize, nTests)
 
-
     for (size <- sizes) {
       val inputSeq = Seq(
         List.fill(size)(0),
@@ -55,7 +54,7 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
       )
 
       for (input <- inputSeq) {
-        test(new SAccumulator(size)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           for (i <- input) {
             dut.io.in.poke(i.S)
@@ -85,7 +84,7 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
       )
 
       for (input <- inputSeq) {
-        test(new SAccumulator(size)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           var n = 0
           for (i <- input) {

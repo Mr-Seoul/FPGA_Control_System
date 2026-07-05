@@ -14,6 +14,6 @@ class DACTest() extends Module {
   io.out := in
 }
 
-//object Test extends App {
-//  emitVerilog(new DACTest())
-//}
+object DACTest extends App {
+  emitVerilog(new DACTest())
+}

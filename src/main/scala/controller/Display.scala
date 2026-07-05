@@ -13,13 +13,13 @@ class DisplayIO() extends Bundle {
   val targetTemp = Input(SInt(config.fixedWidth.W))
   val enable = Input(Bool())
 
-  val sseg = Output(UInt(7.W))
-  val an = Output(UInt(4.W))
+  val anode = Output(UInt(2.W))
+  val asciiOut = Output(UInt(7.W))
+  val modeWrapped = Output(Bool())
 }
 
-class Display(modePeriod : Int, blinkPeriod : Int) extends Module {
+class Display(modePeriod : Int, blinkPeriod : Int, multiplexPeriod : Int) extends Module {
   val io = IO(new DisplayIO())
-  val displayPeriod = 100000
 
   val currentTemp = (io.currentTemp>>config.decimalWidth)
   val targetTemp = (io.targetTemp>>config.decimalWidth)
@@ -34,15 +34,12 @@ class Display(modePeriod : Int, blinkPeriod : Int) extends Module {
     }
   }
 
-  val showTemp = RegInit(true.B)
-  val (blinkCnt, blinkCntWrap) = Counter(1.B, blinkPeriod)
-  when (blinkCntWrap) {
-      showTemp := ~showTemp
-  }
+  val showTemp = RegInit(1.B)
+
 
   val curMessage = Wire(Vec(4, UInt(7.W)))
   val leadingChar = WireDefault(' '.U(7.W))
-  val Clamp = Module(new Clamp(0, 99))
+  val Clamp = Module(new Clamp(0, 99, config.width))
   val clampIn = WireDefault(0.S(config.fixedWidth.W))
 
   switch (curMode) {
@@ -77,11 +74,36 @@ class Display(modePeriod : Int, blinkPeriod : Int) extends Module {
     }
   }
 
-  val (displayCnt, displayWrap) = Counter(1.B, displayPeriod)
-  val (anodeCnt,anodeCntWrap) = Counter(displayWrap,4)
-  val sseg = Module(new SSegDecoder())
-  sseg.io.in := curMessage(anodeCnt)
+  val anodeCnt = RegInit(0.U(2.W))
+  val multiplexCnt = RegInit(0.U((log2Ceil(multiplexPeriod)+1).W))
+  val blinkCnt = RegInit(0.U((log2Ceil(blinkPeriod)+1).W))
 
-  io.sseg := ~sseg.io.out
-  io.an := ~(1.U << anodeCnt)
+  when (modeCntWrap) {
+    multiplexCnt := 0.U
+    anodeCnt := 0.U
+    blinkCnt := 0.U
+    showTemp := 1.B
+  } .otherwise {
+    when (multiplexCnt === (multiplexPeriod-1).U) {
+      multiplexCnt := 0.U
+      when (anodeCnt === 3.U) {
+        anodeCnt := 0.U
+      } .otherwise {
+        anodeCnt := anodeCnt + 1.U
+      }
+    } .otherwise {
+      multiplexCnt := multiplexCnt + 1.U
+    }
+
+    when (blinkCnt === (blinkPeriod-1).U) {
+      blinkCnt := 0.U
+      showTemp := ~showTemp
+    } .otherwise {
+      blinkCnt := blinkCnt + 1.U
+    }
+  }
+
+  io.anode := anodeCnt
+  io.asciiOut := curMessage(anodeCnt)
+  io.modeWrapped := modeCntWrap && curMode === displayModes.enable
 }

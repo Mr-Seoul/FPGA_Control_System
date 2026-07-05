@@ -18,6 +18,24 @@ package object testSuite {
     dut.clock.step()
   }
 
+  def randDouble(minNum : Double, maxNum : Double): Double = {
+    if (minNum == maxNum) {
+      return minNum
+    }
+    return Random.nextDouble() * (maxNum - minNum) + minNum
+  }
+
+  def randDoubles(minNum : Double, maxNum : Double, n : Double): Set[Double] = {
+    var res = Set.empty[Double]
+    while (res.size < n) {
+      val newNum = randDouble(minNum,maxNum)
+      if (!res.contains(newNum)) {
+        res += newNum
+      }
+    }
+    return res
+  }
+
   def randNum(minNum : Int, maxNum : Int): Int = {
     if (minNum == maxNum) {
       return minNum
@@ -34,5 +52,17 @@ package object testSuite {
       }
     }
     return res
+  }
+
+  def clamp(valueOf: Int, min: Int, max: Int): Int = {
+    if (valueOf < min) min
+    else if (valueOf > max) max
+    else valueOf
+  }
+
+  def clampDouble(valueOf: Double, min: Double, max: Double): Double = {
+    if (valueOf < min) min
+    else if (valueOf > max) max
+    else valueOf
   }
 }

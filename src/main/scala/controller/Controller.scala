@@ -13,6 +13,7 @@ object config {
   val blinkPeriod = 50000000
   val errorPeriod = 64
   val smootheningPeriod = 512
+  val multiplexPeriod = 100000
 
   val fixedWidth = 32
   val decimalWidth = 24
@@ -45,11 +46,12 @@ class Controller() extends Module {
     val targetTemp = RegInit(18.F(config.fixedWidth.W,config.decimalWidth.BP))
     val enable = RegInit(1.B)
 
+    //ADC, smoothening and converting to temperature
     val adc = Module(new ADC(config.ADCWidth,config.samplingPeriod))
     adc.io.in := ADCIn
     io.DACOut := adc.io.DACOut
 
-    val inputSmoothener = Module(new Accumulator(config.smootheningPeriod))
+    val inputSmoothener = Module(new Accumulator(config.smootheningPeriod, config.ADCWidth))
     inputSmoothener.io.update := adc.io.valid
     inputSmoothener.io.in := adc.io.out
     inputSmoothener.io.clear := 0.B
@@ -65,7 +67,8 @@ class Controller() extends Module {
     }
     io.ADCOut := regADC
 
-    val display = Module(new Display(config.modePeriod, config.blinkPeriod))
+    //Display initialisation
+    val display = Module(new Display(config.modePeriod, config.blinkPeriod, config.multiplexPeriod))
     val (curTempCnt, curTempWrap) = Counter(1.B,50000000)
     val regCurTemp = RegInit(0.S(config.fixedWidth.W))
     when (curTempWrap) {
@@ -79,9 +82,14 @@ class Controller() extends Module {
     }
     display.io.targetTemp := regTargetTemp
     display.io.enable := enable
-    io.sseg := display.io.sseg
-    io.an := display.io.an
 
+    val sseg = Module(new SSegDecoder())
+    sseg.io.in := display.io.asciiOut
+
+    io.sseg := ~sseg.io.out
+    io.an := ~(1.U << display.io.anode)
+
+    //PID controller initialisation
     val e = Wire(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
     e := curTemp - targetTemp
 
@@ -95,6 +103,13 @@ class Controller() extends Module {
     val coolingPWM = Module(new PWM((1 << config.decimalWidth)))
     coolingPWM.io.in := response
 
+    when (inputSmoothener.io.valid && enable) {
+      io.coolingResponse := Mux(pid.io.response > 0.F(config.fixedWidth.W, config.decimalWidth.BP), coolingPWM.io.out, 0.B)
+    } .otherwise {
+      io.coolingResponse := 0.B
+    }
+
+    //SPI initialisation
     val spi = Module(new SPI())
     spi.io.sck := RegNext(RegNext(io.sck,0.B), 0.B)
     spi.io.csN := RegNext(RegNext(io.csN,1.B),1.B)
@@ -110,12 +125,6 @@ class Controller() extends Module {
     spi.io.data.iEffort := pid.io.iResponse.asSInt
     spi.io.data.dEffort := pid.io.dResponse.asSInt
     spi.io.data.totEffort := pid.io.response.asSInt
-
-    when (inputSmoothener.io.valid && enable) {
-      io.coolingResponse := Mux(pid.io.response > 0.F(config.fixedWidth.W, config.decimalWidth.BP), coolingPWM.io.out, 0.B)
-    } .otherwise {
-      io.coolingResponse := 0.B
-    }
   }
 }
 

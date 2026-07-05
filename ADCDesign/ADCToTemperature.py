@@ -54,5 +54,5 @@ for i in range(256):
     if (i != 255):
         ADCTemps[i] += "\n"
 
-with open("lookup.mem", "w", encoding="utf-8") as file:
+with open("lookup.hex", "w", encoding="utf-8") as file:
     file.writelines(ADCTemps)
