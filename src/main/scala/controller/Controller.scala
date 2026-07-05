@@ -6,13 +6,13 @@ import chisel3.util._
 
 object config {
   val ADCWidth = 8
-  val samplingPeriod = 650
+  val samplingPeriod = 250
 
   val width = 16
   val modePeriod = 200000000
   val blinkPeriod = 50000000
   val errorPeriod = 64
-  val smootheningPeriod = 256
+  val smootheningPeriod = 512
 
   val fixedWidth = 32
   val decimalWidth = 24
@@ -33,9 +33,6 @@ class ControllerIO() extends Bundle {
   val csN = Input(Bool())
   val mosi = Input(Bool())
   val miso = Output(Bool())
-
-  val csNOut = Output(Bool())
-  val sckOut = Output(Bool())
 }
 
 class Controller() extends Module {
@@ -52,8 +49,8 @@ class Controller() extends Module {
     adc.io.in := ADCIn
     io.DACOut := adc.io.DACOut
 
-
     val inputSmoothener = Module(new Accumulator(config.smootheningPeriod))
+    inputSmoothener.io.update := adc.io.valid
     inputSmoothener.io.in := adc.io.out
     inputSmoothener.io.clear := 0.B
 
@@ -89,22 +86,18 @@ class Controller() extends Module {
     e := curTemp - targetTemp
 
     val pid = Module(new PID(config.errorPeriod))
-    pid.io.P := 1.F(config.fixedWidth.W, config.decimalWidth.BP)
-    pid.io.I := 0.F(config.fixedWidth.W, config.decimalWidth.BP)
-    pid.io.D := 0.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.P := 0.5.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.I := 0.001.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.D := -5.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.e := e
 
     val response = pid.io.response.asUInt
     val coolingPWM = Module(new PWM((1 << config.decimalWidth)))
     coolingPWM.io.in := response
 
-    val spi = Module(new SpiSlave())
-    val csNOut = RegNext(RegNext(io.csN,1.B),1.B)
-    val sckOut = RegNext(RegNext(io.sck,0.B), 0.B)
-    io.csNOut := csNOut
-    io.sckOut := sckOut
-    spi.io.sck := sckOut
-    spi.io.csN := csNOut
+    val spi = Module(new SPI())
+    spi.io.sck := RegNext(RegNext(io.sck,0.B), 0.B)
+    spi.io.csN := RegNext(RegNext(io.csN,1.B),1.B)
     spi.io.mosi := RegNext(RegNext(io.mosi,0.B),0.B)
 
     io.miso := spi.io.miso

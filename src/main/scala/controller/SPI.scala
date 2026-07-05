@@ -26,7 +26,7 @@ class SPIIO extends Bundle {
   val data = new SPIData()
 }
 
-class SpiSlave extends Module {
+class SPI extends Module {
   val packetSize = config.fixedWidth*5
 
   val io = IO(new SPIIO())
@@ -69,7 +69,7 @@ class SpiSlave extends Module {
   val enableReg   = RegInit(1.B)
 
   val packetUpdateToggle = RegInit(0.B)
-  when(csnRising && bitCount === packetSize.U) {
+  when(csnRising && bitCount >= packetSize.U) {
     setPointReg        := shrMosi(159, 128).asSInt
     enableReg          := shrMosi(96)
     packetUpdateToggle := !packetUpdateToggle

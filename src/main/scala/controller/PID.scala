@@ -45,8 +45,8 @@ class PID(errorPeriod : Int) extends Module {
   val res = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
   res := pResponse + iResponse + dResponse
 
-  val minResponse = 0.F(config.fixedWidth.W,config.decimalWidth.BP)
-  val maxResponse = 1.F(config.fixedWidth.W, config.decimalWidth.BP)
+  val minResponse = 0.05.F(config.fixedWidth.W,config.decimalWidth.BP)
+  val maxResponse = 0.95.F(config.fixedWidth.W, config.decimalWidth.BP)
 
   io.response := Mux(res < minResponse, minResponse, Mux(res > maxResponse, maxResponse, res))
 }

@@ -25,7 +25,7 @@ class TemperatureLookup() extends Module {
 
   val table = VecInit(lookupData)
 
-  val regOut = table(io.in)
+  val regOut = RegNext(table(io.in))
 
   io.out := regOut
 
