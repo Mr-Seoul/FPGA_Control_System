@@ -4,7 +4,7 @@ import chiseltest._
 import scala.util.Random
 
 package object testSuite {
-  val nTests = 3
+  val nTests = 2
 
   def pow2(exponent: Int): Int = {
     return 1 << exponent

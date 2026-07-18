@@ -15,6 +15,7 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
   val maxVal = pow2(config.width-1) - 1
 
   it should "output the total value" in {
+    val updatePeriods = randNums(minSize,maxSize,nTests)
     val sizes = randNums(minSize, maxSize, nTests)
 
     for (size <- sizes) {
@@ -25,24 +26,29 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
         List.fill(size)(randNum(minVal+1,-1)),
         List.fill(size)(randNum(1,maxVal-1)),
       )
-
-      for (input <- inputSeq) {
-        test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-          resetDUT(dut, maxTimeout)
-          dut.io.update.poke(1.B)
-          var tot = 0
-          for (i <- input) {
-            dut.io.in.poke(i.S)
-            tot += i
-            dut.clock.step()
+      for (updatePeriod <- updatePeriods) {
+        for (input <- inputSeq) {
+          test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+            resetDUT(dut, maxTimeout)
+            dut.io.update.poke(1.B)
+            var tot = 0
+            for (i <- input) {
+              dut.io.update.poke(1.B)
+              dut.io.in.poke(i.S)
+              dut.clock.step()
+              dut.io.update.poke(0.B)
+              tot += i
+              dut.clock.step(updatePeriod)
+            }
+            dut.io.out.expect(tot.S)
           }
-          dut.io.out.expect(tot.S)
         }
       }
     }
   }
 
   it should "clear when clear is asserted" in {
+    val updatePeriods = randNums(minSize,maxSize,nTests)
     val sizes = randNums(minSize, maxSize, nTests)
 
     for (size <- sizes) {
@@ -53,27 +59,32 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
         List.fill(size)(randNum(minVal+1,-1)),
         List.fill(size)(randNum(1,maxVal-1)),
       )
-
-      for (input <- inputSeq) {
-        test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-          resetDUT(dut, maxTimeout)
-          dut.io.update.poke(1.B)
-          for (i <- input) {
-            dut.io.in.poke(i.S)
+      for (updatePeriod <- updatePeriods) {
+        for (input <- inputSeq) {
+          test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+            resetDUT(dut, maxTimeout)
+            dut.io.update.poke(1.B)
+            for (i <- input) {
+              dut.io.update.poke(1.B)
+              dut.io.in.poke(i.S)
+              dut.clock.step()
+              dut.io.update.poke(0.B)
+              dut.clock.step(updatePeriod)
+            }
+            dut.io.clear.poke(1.B)
+            dut.io.in.poke(0.S)
             dut.clock.step()
+            dut.io.clear.poke(0.B)
+            dut.clock.step()
+            dut.io.out.expect(0.S)
           }
-          dut.io.clear.poke(1.B)
-          dut.io.in.poke(0.S)
-          dut.clock.step()
-          dut.io.clear.poke(0.B)
-          dut.clock.step()
-          dut.io.out.expect(0.S)
         }
       }
     }
   }
 
   it should "output valid after accumulator is full" in {
+    val updatePeriods = randNums(minSize,maxSize,nTests)
     val sizes = randNums(minSize, maxSize, nTests)
 
     for (size <- sizes) {
@@ -84,21 +95,25 @@ class SAccumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
         List.fill(size)(randNum(minVal+1,-1)),
         List.fill(size)(randNum(1,maxVal-1)),
       )
-
-      for (input <- inputSeq) {
-        test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-          resetDUT(dut, maxTimeout)
-          dut.io.update.poke(1.B)
-          var n = 0
-          for (i <- input) {
-            dut.io.in.poke(i.S)
-            n += 1
-            dut.io.valid.expect(0.B)
-            dut.clock.step()
-          }
-          for (i <- 0 until size) {
-            dut.io.valid.expect(1.B)
-            dut.clock.step()
+      for (updatePeriod <- updatePeriods) {
+        for (input <- inputSeq) {
+          test(new SAccumulator(size, config.width)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+            resetDUT(dut, maxTimeout)
+            dut.io.update.poke(1.B)
+            var n = 0
+            for (i <- input) {
+              dut.io.update.poke(1.B)
+              dut.io.in.poke(i.S)
+              dut.clock.step()
+              dut.io.update.poke(0.B)
+              n += 1
+              dut.io.valid.expect((n >= size).B)
+              dut.clock.step(updatePeriod)
+            }
+            for (i <- 0 until size) {
+              dut.io.valid.expect(1.B)
+              dut.clock.step()
+            }
           }
         }
       }
