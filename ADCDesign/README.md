@@ -24,12 +24,13 @@ Additionally, we tried to run individual ground and power wires to each section 
 Additionally, we added decoupling capacitors to all power supply pins to improve power stability.
 
 ## Sampling Rate
-That is due to an assumed paracitic capacitance of 10 pF, and a slew rate of 9 $\frac{V}{ \mu s}$ [4]. 
-The SAR algorithm at most jumps by 1.65V at a time.
-Since the DAC has a resistance of 6.8 k$ \Omega$, and we need $ \Delta V*exp(- \frac{T}{R*C}) = 13mV \Rightarrow 1.65V*exp(- \frac{T}{6.8k \Omega*10pF})=13mV \Rightarrow T = 0.33 \mu s$ for the DAC to stabilize.
-Additionaly, the voltage follower needs $ \frac{1.65V}{9 \frac{V}{\mu s}} = 0.18 \mu s$.
-Combining that with a 1.3 $ \mu s$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac {1}{8*(1.3\mu s + 0.33\mu s + 0.18 \mu s)} = 69 kHz$.
-Hence we ran the ADC at 50 kHz to give a bit more margin. Testing later revealed that this worked quite well.
+That is due to an assumed parasitic capacitance of 10 pF, and a slew rate of $9\text{ V}/\mu s$ [4]. 
+The SAR algorithm at most jumps by 1.65 V at a time. 
+Since the DAC has a resistance of $6.8\text{ k}\Omega$, and we need $\Delta V \exp\left(- \frac{T}{RC}\right) = 13\text{ mV} \Rightarrow 1.65\text{V} \exp\left(- \frac{T}{6.8\text{k}\Omega * 10\text{pF}}\right)=13\text{ mV} \Rightarrow T = 0.33\,\mu s$ for the DAC to stabilize. 
+Additionally, the voltage follower needs $\frac{1.65\text{ V}}{9\text{ V}/\mu\text{s}} = 0.18\,\mu s$.
+Combining that with a $1.3\,\mu\text{s}$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac{1}{8 * (1.3\,\mu\text{s} + 0.33\,\mu\text{s} + 0.18\,\mu\text{s})} = 69\text{ kHz}$. 
+Hence we ran the ADC at 50 kHz to give a bit more margin. 
+Testing later revealed that this worked quite well.
 
 ## Temperature Accuracy and Resolutions
 At 13mV quantisation levels, that gives us a 0.4 degrees of resolution. 
@@ -58,6 +59,7 @@ This worked, but we noticed some non-linearity and a large dc offset.
 
 As you can see, it looks quite linear, but as you can see below:
 ![InitialError.png](InitialError.png)
+
 The error can be quite large and jumps around from being too high and too low.
 We stopped measuring after we noticed how bad the DAC was performing. 
 After some trouble shooting, we learned that the FPGA wasn't outputting 3.3v for HIGH signals, but in between 3.1 and 3.3.
@@ -80,6 +82,7 @@ This shows that the DAC is always within 2.5 mV, which is perfect for our use ca
 ## Iteration 5
 We installed the LM393N. After doing testing, we noticed severe non-linearity despite the previous validation of the DAC. That is likely that the couple of microAmps the lm393 draws distortes the DAC, hence we installed some voltage follower op-amps to isolate the DAC.
 ![Iteration5.png](Iteration5.png)
+
 Testing then revealed very strong linearity on the ADC, never being off by more than 2 mV.
 ![ADCLinearity.png](ADCLinearity.png)
 
