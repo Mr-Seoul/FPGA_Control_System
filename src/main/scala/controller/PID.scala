@@ -32,6 +32,7 @@ class PID(errorPeriod : Int, updatePeriod : Int) extends Module {
   val intE = Wire(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
   val diffE = Wire(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
 
+  //Update stored errors every update period, not every cycle
   val lastE = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
   val (updateCnt, updateWrap) = Counter(1.B, updatePeriod)
   lastE := Mux(updateWrap, io.e, lastE)
