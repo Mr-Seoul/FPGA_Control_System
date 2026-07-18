@@ -103,6 +103,9 @@ We should also spend more time in system integration, as the lack of seperation 
 # Sources:
 
 [1] Texas_Instruments-LM311N-NOPB-datasheet.pdf
+
 [2] NTCM-10K-B3380.pdf
+
 [3] esp32_datasheet_en.pdf
+
 [4] CA3140E.pdf
