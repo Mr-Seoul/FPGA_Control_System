@@ -17,6 +17,7 @@ class Accumulator(n : Int, width : Int) extends Module {
   val tot = RegInit(0.U((width+(log2Ceil(n)+1)).W))
   val regChain = RegInit(VecInit(Seq.fill(n)(0.U(width.W))))
 
+  //Update Logic
   val full = RegInit(0.B)
   val updateTick = Wire(Bool())
   updateTick := 0.B
@@ -27,6 +28,7 @@ class Accumulator(n : Int, width : Int) extends Module {
   }
   io.valid := full
 
+  //Operational Logic
   when (io.clear) {
     for (i <- 0 until n) {
       regChain(i) := 0.U
@@ -45,5 +47,6 @@ class Accumulator(n : Int, width : Int) extends Module {
 
     tot := (tot.asSInt + diff).asUInt
   }
+
   io.out := tot
 }

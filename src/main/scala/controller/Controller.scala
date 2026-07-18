@@ -47,7 +47,7 @@ class Controller() extends Module {
     val targetTemp = RegInit(18.F(config.fixedWidth.W,config.decimalWidth.BP))
     val enable = RegInit(1.B)
 
-    //ADC, smoothening and converting to temperature
+    //ADC, input smoothening and converting to temperature
     val adc = Module(new ADC(config.ADCWidth,config.samplingPeriod))
     adc.io.in := ADCIn
     io.DACOut := adc.io.DACOut
