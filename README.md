@@ -58,11 +58,11 @@ We should get more powerful power supplies, and seperate the power supplied to t
 Additionally, should also use more voltage regulator ICs to stabilize the voltage on the ADC.
 
 # Group / Responsibilities
-Örn: https://www.linkedin.com/in/%C3%B6rn-arnarson-b6bb141b5/ : ADC Soldering, design and testing
+Örn Arnarson: https://www.linkedin.com/in/%C3%B6rn-arnarson-b6bb141b5/ : ADC Soldering, design and testing
 
-Mark: FPGA programming, ADC Design, soldering and testing
+Mark van Damme: FPGA programming, ADC Design, soldering and testing
 
-Aiden: ADC testing
+Aidan Fiil-Flynm: ADC testing
 
 # Further Reading
 
