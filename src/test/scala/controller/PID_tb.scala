@@ -31,7 +31,7 @@ class PID_tb extends AnyFlatSpec with ChiselScalatestTester {
     )
     for (pList <- pInputs) {
       for (p <- pList) {
-        test(new PID(1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new PID(1,1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           dut.io.P.poke(p)
 
@@ -67,7 +67,7 @@ class PID_tb extends AnyFlatSpec with ChiselScalatestTester {
     for (errorPeriod <- errorPeriods) {
       for (iList <- iInputs) {
         for (i <- iList) {
-          test(new PID(errorPeriod)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+          test(new PID(errorPeriod,1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
             resetDUT(dut, maxTimeout)
             dut.io.I.poke(i)
 
@@ -99,7 +99,7 @@ class PID_tb extends AnyFlatSpec with ChiselScalatestTester {
     for (dList <- dInputs) {
       for (d <- dList) {
         var lastE = 0.0
-        test(new PID(1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new PID(1,1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           dut.io.D.poke(d)
 
@@ -137,7 +137,7 @@ class PID_tb extends AnyFlatSpec with ChiselScalatestTester {
     for (errorPeriod <- errorPeriods) {
       for (values <- Inputs) {
         var lastE = 0.0
-        test(new PID(errorPeriod)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
+        test(new PID(errorPeriod,1)).withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
           resetDUT(dut, maxTimeout)
           val p = values(0)
           val i = values(1)

@@ -10,6 +10,7 @@ object config {
 
   val width = 16
   val modePeriod = 200000000
+  val FPGAFrequency = 100000000
   val blinkPeriod = 50000000
   val errorPeriod = 64
   val smootheningPeriod = 512
@@ -93,7 +94,7 @@ class Controller() extends Module {
     val e = Wire(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
     e := curTemp - targetTemp
 
-    val pid = Module(new PID(config.errorPeriod))
+    val pid = Module(new PID(config.errorPeriod, config.FPGAFrequency))
     pid.io.P := 0.5.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.I := 0.001.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.D := -5.F(config.fixedWidth.W, config.decimalWidth.BP)

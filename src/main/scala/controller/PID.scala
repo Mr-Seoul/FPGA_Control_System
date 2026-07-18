@@ -18,7 +18,7 @@ class PIDIO() extends Bundle {
   val totError = Output(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
 }
 
-class PID(errorPeriod : Int) extends Module {
+class PID(errorPeriod : Int, updatePeriod : Int) extends Module {
   val io = IO(new PIDIO())
 
   def pow2(exponent: Int): Int = {
@@ -32,8 +32,11 @@ class PID(errorPeriod : Int) extends Module {
   val intE = Wire(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
   val diffE = Wire(FixedPoint(config.fixedWidth.W,config.decimalWidth.BP))
 
-  val lastE = RegNext(io.e)
+  val lastE = RegInit(0.F(config.fixedWidth.W,config.decimalWidth.BP))
+  val (updateCnt, updateWrap) = Counter(1.B, updatePeriod)
+  lastE := Mux(updateWrap, io.e, lastE)
   val accumulator = Module(new SAccumulator(errorPeriod, config.fixedWidth))
+  accumulator.io.update := updateWrap
   accumulator.io.clear := 0.B
   accumulator.io.in := io.e.asSInt
 
@@ -73,5 +76,5 @@ class PID(errorPeriod : Int) extends Module {
 }
 
 object PIDTestBench extends App {
-  emitVerilog(new PID(5))
+  emitVerilog(new PID(5,1))
 }

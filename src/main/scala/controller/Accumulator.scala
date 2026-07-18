@@ -20,8 +20,9 @@ class Accumulator(n : Int, width : Int) extends Module {
   val full = RegInit(0.B)
   val updateTick = Wire(Bool())
   updateTick := 0.B
-  val (cnt, cntWrap) = Counter(updateTick, n)
-  when (cntWrap) {
+  val cnt = RegInit(0.U((log2Ceil(n)+1).W))
+  cnt := Mux(updateTick && cnt < (n-1).U, cnt+1.U, cnt)
+  when (cnt === (n-1).U) {
     full := 1.B
   }
   io.valid := full
