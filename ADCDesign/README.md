@@ -24,11 +24,11 @@ Additionally, we tried to run individual ground and power wires to each section 
 Additionally, we added decoupling capacitors to all power supply pins to improve power stability.
 
 ## Sampling Rate
-That is due to an assumed parasitic capacitance of 10 pF, and a slew rate of $9\text{ V}/\mu s$ [4]. 
+That is due to an assumed parasitic capacitance of 10 pF, and a slew rate of $9 \frac{V}{\mu s}$ [4]. 
 The SAR algorithm at most jumps by 1.65 V at a time. 
-Since the DAC has a resistance of $6.8\text{ k}\Omega$, and we need $\Delta V \exp\left(- \frac{T}{RC}\right) = 13\text{ mV} \Rightarrow 1.65\text{V} \exp\left(- \frac{T}{6.8\text{k}\Omega * 10\text{pF}}\right)=13\text{ mV} \Rightarrow T = 0.33\,\mu s$ for the DAC to stabilize. 
-Additionally, the voltage follower needs $\frac{1.65\text{ V}}{9\text{ V}/\mu\text{s}} = 0.18\,\mu s$.
-Combining that with a $1.3\,\mu\text{s}$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac{1}{8 * (1.3\,\mu\text{s} + 0.33\,\mu\text{s} + 0.18\,\mu\text{s})} = 69\text{ kHz}$. 
+Since the DAC has a resistance of $6.8 k\Omega$, and we need $\Delta V \exp\left(- \frac{T}{RC}\right) = 13 mV \Rightarrow 1.65\text{V} \exp\left(- \frac{T}{6.8k\Omega * 10 pF}\right)=13 mV \Rightarrow T = 0.33\,\mu s$ for the DAC to stabilize. 
+Additionally, the voltage follower needs $\frac{1.65\text{ V}}{9\text{ V}/\mu\text{s}} = 0.18\mu s$.
+Combining that with a $1.3\,\mu\text{s}$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac{1}{8 * (1.3 \mu s + 0.33\,\mu s + 0.18\,\mu s)} = 69 kHz$. 
 Hence we ran the ADC at 50 kHz to give a bit more margin. 
 Testing later revealed that this worked quite well.
 
