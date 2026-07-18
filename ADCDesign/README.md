@@ -24,17 +24,17 @@ Additionally, we tried to run individual ground and power wires to each section 
 Additionally, we added decoupling capacitors to all power supply pins to improve power stability.
 
 ## Sampling Rate
-That is due to an assumed paracitic capacitance of 10 pF, and a slew rate of 9 V/$\mu$s [4]. 
+That is due to an assumed paracitic capacitance of 10 pF, and a slew rate of 9 $\frac{V}{ \mu s}$ [4]. 
 The SAR algorithm at most jumps by 1.65V at a time.
-Since the DAC has a resistance of 6.8 k$\Omega$, and we need $\Delta V*exp(-\frac{T}{R*C}) = 13mV \Rightarrow 1.65V*exp(-\frac{T}{6.8k\Omega*10pF})=13mV\Rightarrow T = 0.33\mu s$ for the DAC to stabilize.
-Additionaly, the voltage follower needs $\frac{1.65V}{9 \frac{V}{\mu s}} = 0.18 \mu s$.
-Combining that with a 1.3 $\mu s$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac {1}{8*(1.3\mu s + 0.33\mu s + 0.18 \mu s)} = 69 kHz$.
+Since the DAC has a resistance of 6.8 k$ \Omega$, and we need $ \Delta V*exp(- \frac{T}{R*C}) = 13mV \Rightarrow 1.65V*exp(- \frac{T}{6.8k \Omega*10pF})=13mV \Rightarrow T = 0.33 \mu s$ for the DAC to stabilize.
+Additionaly, the voltage follower needs $ \frac{1.65V}{9 \frac{V}{\mu s}} = 0.18 \mu s$.
+Combining that with a 1.3 $ \mu s$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac {1}{8*(1.3\mu s + 0.33\mu s + 0.18 \mu s)} = 69 kHz$.
 Hence we ran the ADC at 50 kHz to give a bit more margin. Testing later revealed that this worked quite well.
 
 ## Temperature Accuracy and Resolutions
 At 13mV quantisation levels, that gives us a 0.4 degrees of resolution. 
 Since it is rounding, the error is +-0.2 degrees celcius. 
-Testing later revealed near 0 DC offset with very high accuracy, with only 2.5mV of error. It only sometimes jumping between values (presumably when the measurement voltage is near the quantisation steps).
+Testing later revealed near 0 DC offset with very high accuracy, with only 2.5mV of error. It only sometimes jumps between values (presumably when the measurement voltage is near the quantisation steps).
 That gives a final error of 0.48 degrees celcius.
 
 # ADC Building Process
