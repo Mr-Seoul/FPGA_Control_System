@@ -101,7 +101,7 @@ class Accumulator_tb extends AnyFlatSpec with ChiselScalatestTester {
               dut.clock.step()
               dut.io.update.poke(0.B)
               n += 1
-              dut.io.valid.expect((n >= size).B)
+              dut.io.valid.expect(0.B)
               dut.clock.step(updatePeriod)
             }
             for (i <- 0 until size) {

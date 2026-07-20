@@ -18,14 +18,10 @@ class Accumulator(n : Int, width : Int) extends Module {
   val regChain = RegInit(VecInit(Seq.fill(n)(0.U(width.W))))
 
   //Update Logic
-  val full = RegInit(0.B)
-  val updateTick = Wire(Bool())
-  updateTick := 0.B
   val cnt = RegInit(0.U((log2Ceil(n)+1).W))
-  cnt := Mux(updateTick && cnt < (n-1).U, cnt+1.U, cnt)
-  when (cnt === (n-1).U) {
-    full := 1.B
-  }
+  cnt := Mux(io.update && cnt < n.U, cnt+1.U, cnt)
+  val full = RegInit(0.B)
+  full := cnt === n.U
   io.valid := full
 
   //Operational Logic
@@ -34,9 +30,8 @@ class Accumulator(n : Int, width : Int) extends Module {
       regChain(i) := 0.U
     }
     tot := 0.U
-    full := 0.B
+    cnt := 0.U
   } .elsewhen(io.update) {
-    updateTick := 1.B
     regChain(0) := io.in
     for (i <- 1 until n) {
       regChain(i) := regChain(i - 1)
