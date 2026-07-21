@@ -13,6 +13,7 @@ object config {
   val FPGAFrequency = 100000000
   val blinkPeriod = 50000000
   val errorPeriod = 64
+  //Note that the smoothening Period MUST be a power of 2.
   val smootheningPeriod = 512
   val multiplexPeriod = 100000
 

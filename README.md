@@ -1,5 +1,13 @@
 # Read me
 
+# Quickstart
+
+To transpile to Verilog run ```sbt run```
+
+To run the test suite, run ```sbt test```
+
+To run individual test suites, run ```sbt "TestOnly controller.xxx_tb"```, for example ```sbt "TestOnly controller.PWM_tb"```
+
 # Introduction
 This was built for the DTU course 22400 : Design build 4. 
 This is the final practical 3 week course for Bsc. General Engineering students at DTU, where large, interdisciplinary groups of 10 students must make an autonomous system to keep mussels alive. 
@@ -35,6 +43,7 @@ A resistor was put in series with the thermister, which we optimised to give the
 
 # Testing Procedure
 ![Testing.png](Testing.png)
+
 We first built the DAC and tested it.
 When we were happy with the result (solid linearity and limited error), we installed the comparator and voltage followers. 
 We then documented the performance (ADC code) for every 100 mV (supplied via a power supply with +/- 5mV error).
@@ -46,7 +55,9 @@ It could be because the volume of water was different than in our simulation, or
 In either case, the initial test was used to adjust the P,I,D values for a more stable controller.
 
 # Results
-The ADC tests well (see README in the ADCDesign folder). It has 2.5mV of error, near 0mV offset, and is highly linear. 
+![Iteration5.png](ADCDesign/Iteration5.png)
+
+The ADC tests well (see README in the ADCDesign folder) and is extremely convenient to use as it can plug directly into the FPGA. It has 2.5mV of error, near 0mV offset, and is highly linear. 
 It does however struggle heavily when the relay is connected and starts switching, significantly getting more noise than during testing.
 We were unable to fix the relay noise during the course, but a further revision could make the project viable.
 
@@ -72,3 +83,4 @@ Look into the "PIDAnalysis" folder on how our PID simulation was derived and per
 
 Look into the "SystemAnalysis" folder on how we selected the resistor value for the setting resistor.
 
+Look into the "src\main\scala\controller" folder to see an overview of the FPGA firmware.
