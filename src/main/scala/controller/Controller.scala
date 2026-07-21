@@ -14,7 +14,7 @@ object config {
   val blinkPeriod = 50000000
   val errorPeriod = 64
   //Note that the smoothening Period MUST be a power of 2.
-  val smootheningPeriod = 512
+  val smootheningPeriod = 64
   val multiplexPeriod = 100000
 
   val fixedWidth = 32

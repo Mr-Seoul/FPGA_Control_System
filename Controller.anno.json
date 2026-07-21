@@ -1,5 +1,23 @@
 [
   {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~Controller|Clamp_2",
+    "duplicate":"~Controller|Controller/pid:PID/pClamp:Clamp_2",
+    "index":0.5714285714285714
+  },
+  {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~Controller|Clamp_3",
+    "duplicate":"~Controller|Controller/pid:PID/iClamp:Clamp_2",
+    "index":0.6428571428571429
+  },
+  {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~Controller|Clamp_4",
+    "duplicate":"~Controller|Controller/pid:PID/dClamp:Clamp_2",
+    "index":0.7142857142857143
+  },
+  {
     "class":"firrtl.EmitCircuitAnnotation",
     "emitter":"firrtl.VerilogEmitter"
   },

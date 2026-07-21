@@ -49,12 +49,20 @@ class PID(errorPeriod : Int, updatePeriod : Int) extends Module {
   diffE := io.e - lastE
 
   //Pipeline individual responses in a register to shorten critical path (large multiplications)
+  val pMult = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))
+  val iMult = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))
+  val dMult = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))
+  pMult := (io.P*propE).setBinaryPoint(config.decimalWidth)
+  iMult := (io.I*intE).setBinaryPoint(config.decimalWidth)
+  dMult := (io.D*diffE).setBinaryPoint(config.decimalWidth)
+
   val pClamp = Module(new Clamp(minVal, maxVal, 2*config.fixedWidth))
   val iClamp = Module(new Clamp(minVal, maxVal, 2*config.fixedWidth))
   val dClamp = Module(new Clamp(minVal, maxVal, 2*config.fixedWidth))
-  pClamp.io.in := (io.P*propE).setBinaryPoint(config.decimalWidth).asSInt
-  iClamp.io.in := (io.I*intE).setBinaryPoint(config.decimalWidth).asSInt
-  dClamp.io.in := (io.D*diffE).setBinaryPoint(config.decimalWidth).asSInt
+  pClamp.io.in := pMult.asSInt
+  iClamp.io.in := iMult.asSInt
+  dClamp.io.in := dMult.asSInt
+
   val pResponse = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))
   val iResponse = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))
   val dResponse = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))

@@ -10,7 +10,7 @@ class PID_tb extends AnyFlatSpec with ChiselScalatestTester {
   val size = 5
   val minVal = -16.0
   val maxVal = 16.0
-  val minPeriod = 2
+  val minPeriod = 3
   val maxPeriod = 10
 
   //Chosen to ensure relay doesn't switch too quickly
