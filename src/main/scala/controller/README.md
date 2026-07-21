@@ -3,6 +3,7 @@
 ## Block Diagram
 ![overview.png](overview.png)
 This is an extremely high level overview of the project.
+You can look into the code itself to see all sub modules and their interaction.
 
 Firstly the ADC module utilizes the SAR algorithm to digitize the incoming analogue signal.
 Then the digital representation gets smoothened by averaging the incoming signal. 
@@ -27,3 +28,9 @@ The SPI module also passes an enable flag to the Display modules (which controls
 | SPI               | Transmits P,I,D and PID effort values along with temperature (all Q8,24F) and receives the set point and if it should generate a PWM signal via SPI |
 | SSegDecoder       | Converts numbers and ASCII characters to the relevant sseg values                                                                                  |
 | TemperatureLookup | A lookup table to convert ADC values to Q8,24F temperature values                                                                                  |
+
+## Resource Utilisation
+![timing.png](timing.png)
+
+The FPGA firmware, when synthesising for a Basys 3 board (xc7a35tcpg236-1) on vivado, utilizes 1171 lookup tables and 1201 flipflops, representing less than 6 percent utilisation. 
+Additionally, the worst negative slack is 0.028 ns, and the worst hold slack is 0.079 ns showing that there are no setup or hold time violations. 

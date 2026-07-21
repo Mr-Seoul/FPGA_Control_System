@@ -83,4 +83,6 @@ Look into the "PIDAnalysis" folder on how our PID simulation was derived and per
 
 Look into the "SystemAnalysis" folder on how we selected the resistor value for the setting resistor.
 
-Look into the "src\main\scala\controller" folder to see an overview of the FPGA firmware.
+Look into the "src\main\scala\controller" folder to see an overview of the FPGA firmware and resource utilisation.
+
+Look into schematic.pdf to the the FPGA routing of the firmware.
