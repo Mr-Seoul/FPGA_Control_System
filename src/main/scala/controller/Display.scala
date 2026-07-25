@@ -10,11 +10,11 @@ object displayModes extends ChiselEnum {
 
 class DisplayIO() extends Bundle {
   val currentTemp = Input(SInt(config.fixedWidth.W))
-  val targetTemp = Input(SInt(config.fixedWidth.W))
-  val enable = Input(Bool())
+  val targetTemp  = Input(SInt(config.fixedWidth.W))
+  val enable      = Input(Bool())
 
-  val anode = Output(UInt(2.W))
-  val asciiOut = Output(UInt(7.W))
+  val anode       = Output(UInt(2.W))
+  val asciiOut    = Output(UInt(7.W))
   val modeWrapped = Output(Bool())
 }
 
@@ -22,27 +22,26 @@ class Display(modePeriod : Int, blinkPeriod : Int, multiplexPeriod : Int) extend
   val io = IO(new DisplayIO())
 
   val currentTemp = (io.currentTemp>>config.decimalWidth)
-  val targetTemp = (io.targetTemp>>config.decimalWidth)
+  val targetTemp  = (io.targetTemp>>config.decimalWidth)
 
-  val curMode = RegInit(displayModes.current)
+  val regMode = RegInit(displayModes.current)
   val (modeCnt, modeCntWrap) = Counter(1.B, modePeriod)
   when (modeCntWrap) {
-    switch (curMode) {
-      is (displayModes.current) { curMode := displayModes.target }
-      is (displayModes.target) { curMode := displayModes.enable }
-      is (displayModes.enable) { curMode := displayModes.current }
+    switch (regMode) {
+      is (displayModes.current){ regMode := displayModes.target }
+      is (displayModes.target) { regMode := displayModes.enable }
+      is (displayModes.enable) { regMode := displayModes.current }
     }
   }
 
   val showTemp = RegInit(1.B)
 
-
-  val curMessage = Wire(Vec(4, UInt(7.W)))
+  val curMessage  = Wire(Vec(4, UInt(7.W)))
   val leadingChar = WireDefault(' '.U(7.W))
-  val Clamp = Module(new Clamp(0, 99, config.width))
-  val clampIn = WireDefault(0.S(config.fixedWidth.W))
+  val Clamp       = Module(new Clamp(0, 99, config.width))
+  val clampIn     = WireDefault(0.S(config.fixedWidth.W))
 
-  switch (curMode) {
+  switch (regMode) {
     is (displayModes.current) {
       leadingChar := 'C'.U
       clampIn := currentTemp
@@ -61,7 +60,7 @@ class Display(modePeriod : Int, blinkPeriod : Int, multiplexPeriod : Int) extend
 
   curMessage(3) := leadingChar
   curMessage(2) := '='.U
-  when (curMode === displayModes.current || curMode === displayModes.target) {
+  when (regMode === displayModes.current || regMode === displayModes.target) {
     curMessage(1) := Mux(!showTemp && Clamp.io.isClamped, ' '.U, curNumber / 10.U)
     curMessage(0) := Mux(!showTemp && Clamp.io.isClamped, ' '.U, curNumber % 10.U)
   } .otherwise {
@@ -74,36 +73,36 @@ class Display(modePeriod : Int, blinkPeriod : Int, multiplexPeriod : Int) extend
     }
   }
 
-  val anodeCnt = RegInit(0.U(2.W))
-  val multiplexCnt = RegInit(0.U((log2Ceil(multiplexPeriod)+1).W))
-  val blinkCnt = RegInit(0.U((log2Ceil(blinkPeriod)+1).W))
+  val regAnodeCnt     = RegInit(0.U(2.W))
+  val regMultiplexCnt = RegInit(0.U((log2Ceil(multiplexPeriod)+1).W))
+  val regBlinkCnt     = RegInit(0.U((log2Ceil(blinkPeriod)+1).W))
 
   when (modeCntWrap) {
-    multiplexCnt := 0.U
-    anodeCnt := 0.U
-    blinkCnt := 0.U
-    showTemp := 1.B
+    regMultiplexCnt := 0.U
+    regAnodeCnt     := 0.U
+    regBlinkCnt     := 0.U
+    showTemp        := 1.B
   } .otherwise {
-    when (multiplexCnt === (multiplexPeriod-1).U) {
-      multiplexCnt := 0.U
-      when (anodeCnt === 3.U) {
-        anodeCnt := 0.U
+    when (regMultiplexCnt === (multiplexPeriod-1).U) {
+      regMultiplexCnt := 0.U
+      when (regAnodeCnt === 3.U) {
+        regAnodeCnt := 0.U
       } .otherwise {
-        anodeCnt := anodeCnt + 1.U
+        regAnodeCnt := regAnodeCnt + 1.U
       }
     } .otherwise {
-      multiplexCnt := multiplexCnt + 1.U
+      regMultiplexCnt := regMultiplexCnt + 1.U
     }
 
-    when (blinkCnt === (blinkPeriod-1).U) {
-      blinkCnt := 0.U
-      showTemp := ~showTemp
+    when (regBlinkCnt === (blinkPeriod-1).U) {
+      regBlinkCnt := 0.U
+      showTemp    := ~showTemp
     } .otherwise {
-      blinkCnt := blinkCnt + 1.U
+      regBlinkCnt := regBlinkCnt + 1.U
     }
   }
 
-  io.anode := anodeCnt
-  io.asciiOut := curMessage(anodeCnt)
-  io.modeWrapped := modeCntWrap && curMode === displayModes.enable
+  io.anode       := regAnodeCnt
+  io.asciiOut    := curMessage(regAnodeCnt)
+  io.modeWrapped := modeCntWrap && regMode === displayModes.enable
 }

@@ -22,18 +22,18 @@ object config {
 }
 
 class ControllerIO() extends Bundle {
-  val ADCIn = Input(Bool())
+  val ADCIn  = Input(Bool())
   val DACOut = Output(UInt(8.W))
   val ADCOut = Output(UInt(8.W))
   val coolingResponse = Output(Bool())
 
   val sseg = Output(UInt(7.W))
-  val an = Output(UInt(4.W))
+  val an   = Output(UInt(4.W))
 
   val packetUpdate = Output(Bool())
 
-  val sck = Input(Bool())
-  val csN = Input(Bool())
+  val sck  = Input(Bool())
+  val csN  = Input(Bool())
   val mosi = Input(Bool())
   val miso = Output(Bool())
 }
@@ -44,34 +44,34 @@ class Controller() extends Module {
   val synchronizedReset = RegNext(RegNext(reset))
 
   withReset(synchronizedReset.asAsyncReset) {
-    val ADCIn = RegNext(RegNext(io.ADCIn, 1.B), 0.B)
+    val ADCIn      = RegNext(RegNext(io.ADCIn, 1.B), 0.B)
     val targetTemp = RegInit(18.F(config.fixedWidth.W,config.decimalWidth.BP))
-    val enable = RegInit(1.B)
+    val enable     = RegInit(1.B)
 
     //ADC, input smoothening and converting to temperature
-    val adc = Module(new ADC(config.ADCWidth,config.samplingPeriod))
+    val adc    = Module(new ADC(config.ADCWidth,config.samplingPeriod))
     adc.io.in := ADCIn
     io.DACOut := adc.io.DACOut
 
     val inputSmoothener = Module(new Accumulator(config.smootheningPeriod, config.ADCWidth))
     inputSmoothener.io.update := adc.io.valid
-    inputSmoothener.io.in := adc.io.out
-    inputSmoothener.io.clear := 0.B
+    inputSmoothener.io.in     := adc.io.out
+    inputSmoothener.io.clear  := 0.B
 
-    val tempLookup = Module(new TemperatureLookup())
-    tempLookup.io.in := inputSmoothener.io.out >> (log2Ceil(config.smootheningPeriod))
-    val curTemp = tempLookup.io.out
-
-    val (adcCnt, adcWrap) = Counter(1.B,50000000)
+    val (adcCnt, adcWrap) = Counter(1.B,config.blinkPeriod)
     val regADC = RegInit(0.U(8.W))
     when (adcWrap) {
-      regADC := inputSmoothener.io.out >> (log2Ceil(config.smootheningPeriod))
+      regADC  := inputSmoothener.io.out >> (log2Ceil(config.smootheningPeriod))
     }
     io.ADCOut := regADC
 
+    val tempLookup    = Module(new TemperatureLookup())
+    tempLookup.io.in := regADC
+    val curTemp       = tempLookup.io.out
+
     //Display initialisation
     val display = Module(new Display(config.modePeriod, config.blinkPeriod, config.multiplexPeriod))
-    val (curTempCnt, curTempWrap) = Counter(1.B,50000000)
+    val (curTempCnt, curTempWrap) = Counter(1.B,config.blinkPeriod)
     val regCurTemp = RegInit(0.S(config.fixedWidth.W))
     when (curTempWrap) {
       regCurTemp := curTemp.asSInt
@@ -83,13 +83,13 @@ class Controller() extends Module {
       regTargetTemp := targetTemp.asSInt
     }
     display.io.targetTemp := regTargetTemp
-    display.io.enable := enable
+    display.io.enable     := enable
 
-    val sseg = Module(new SSegDecoder())
+    val sseg    = Module(new SSegDecoder())
     sseg.io.in := display.io.asciiOut
 
     io.sseg := ~sseg.io.out
-    io.an := ~(1.U << display.io.anode)
+    io.an   := ~(1.U << display.io.anode)
 
     //PID controller initialisation
     val e = Wire(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
@@ -101,8 +101,8 @@ class Controller() extends Module {
     pid.io.D := -5.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.e := e
 
-    val response = pid.io.response.asUInt
-    val coolingPWM = Module(new PWM((1 << config.decimalWidth)))
+    val response      = pid.io.response.asUInt
+    val coolingPWM    = Module(new PWM((1 << config.decimalWidth)))
     coolingPWM.io.in := response
 
     when (inputSmoothener.io.valid && enable) {
@@ -113,20 +113,20 @@ class Controller() extends Module {
 
     //SPI initialisation
     val spi = Module(new SPI())
-    spi.io.sck := RegNext(RegNext(io.sck,0.B), 0.B)
-    spi.io.csN := RegNext(RegNext(io.csN,1.B),1.B)
+    spi.io.sck  := RegNext(RegNext(io.sck,0.B), 0.B)
+    spi.io.csN  := RegNext(RegNext(io.csN,1.B),1.B)
     spi.io.mosi := RegNext(RegNext(io.mosi,0.B),0.B)
 
-    io.miso := spi.io.miso
+    io.miso         := spi.io.miso
     io.packetUpdate := spi.io.packetUpdate
 
     targetTemp := spi.io.data.setPoint.asFixedPoint(config.decimalWidth.BP)
-    enable := spi.io.data.enable
+    enable     := spi.io.data.enable
     spi.io.data.temperature := curTemp.asSInt
-    spi.io.data.pEffort := pid.io.pResponse.asSInt
-    spi.io.data.iEffort := pid.io.iResponse.asSInt
-    spi.io.data.dEffort := pid.io.dResponse.asSInt
-    spi.io.data.totEffort := pid.io.response.asSInt
+    spi.io.data.pEffort     := pid.io.pResponse.asSInt
+    spi.io.data.iEffort     := pid.io.iResponse.asSInt
+    spi.io.data.dEffort     := pid.io.dResponse.asSInt
+    spi.io.data.totEffort   := pid.io.response.asSInt
   }
 }
 
