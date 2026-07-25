@@ -24,19 +24,19 @@ Additionally, we tried to run individual ground and power wires to each section 
 Additionally, we added decoupling capacitors to all power supply pins to improve power stability.
 
 ## Sampling Rate
-That is due to an assumed parasitic capacitance of 10 pF (derived from [5]), and a slew rate of $9 \frac{V}{\mu s}$ [4]. 
+That is due to an assumed parasitic capacitance of 10 pF (approximated from [5]), and a slew rate of $9 \frac{V}{\mu s}$ [4]. 
 The SAR algorithm at most jumps by 1.65 V at a time. 
 Since the DAC has a resistance of $6.8 k\Omega$, and we need $\Delta V \exp\left(- \frac{T}{RC}\right) = 13 mV \Rightarrow 1.65\text{V} \exp\left(- \frac{T}{6.8k\Omega * 10 pF}\right)=13 mV \Rightarrow T = 0.33\mu s$ for the DAC to stabilize. 
 Additionally, the voltage follower needs $\frac{1.65 V}{9 \frac{V}{\mu s}} = 0.18\mu s$.
 Combining that with a $1.3\mu\text{s}$ comparator delay and 8 comparisons per sample, we get a max frequency of $\frac{1}{8 * (1.3 \mu s + 0.33\mu s + 0.18\mu s)} = 69 kHz$. 
-Hence we ran the ADC at 50 kHz to give a bit more margin. 
+Hence, we ran the ADC at 50 kHz to give a bit more margin. 
 Testing later revealed that this worked quite well.
 
 ## Temperature Accuracy and Resolutions
 At 13mV quantisation levels, that gives us a 0.4 degrees of resolution. 
-Since it is rounding, the error is +-0.2 degrees celcius. 
+Since it is rounding, the error is +-0.2 degrees Celsius. 
 Testing later revealed near 0 DC offset with very high accuracy, with only 2.5mV of error. It only sometimes jumps between values (presumably when the measurement voltage is near the quantisation steps).
-That gives a final error of 0.48 degrees celcius.
+That gives a final error of 0.48 degrees Celsius.
 
 # ADC Building Process
 
@@ -47,7 +47,7 @@ We began with standard 1 kOhm resistors.
 Halfway through soldering, we realized that the tolerances (+/- 5%) would destroy the tolerances, and decided to redo the board.
 
 ### Iteration 2:
-We switches to 820 Ohm resistors with +/- 1% tolerances.
+We switched to 820 Ohm resistors with +/- 1% tolerances.
 We also introduced a 9th bit to the DAC which we permanently toggled on. 
 This would bias the DAC voltage by 0.5 bits, which would allow us to convert the ADC into a rounding ADC, halving the absolute error from \[0, 1 bit], to \[-0.5 bit, 0.5 bit].
 That does however introduce a 257th range (fencepost theorem). We solved that by making 254 map to 2954, which would give 2 0.5LSB ranges on the edges, and 1.01 LSB ranges in the middle.
@@ -94,7 +94,7 @@ Additionally, the noise at 50kHz was near zero for a stable input voltage, which
 
 ## Comparison to MCU
 The MCU, even with multisampling, can be quite noisy. Our solution on the other hand is much more stable. 
-In short, we traded resolution for accuracy and stability, which we feel is warrented for the project as noise fundamentally makes the PID system less effective.
+In short, we traded resolution for accuracy and stability, which we feel is warranted for the project as noise fundamentally makes the PID system less effective.
 
 # Post Mortem
 Next time, we should introduce voltage regulators to keep the ADC power supply stable. 
