@@ -24,7 +24,7 @@ Additionally, we tried to run individual ground and power wires to each section 
 Additionally, we added decoupling capacitors to all power supply pins to improve power stability.
 
 ## Sampling Rate
-That is due to an assumed parasitic capacitance of 10 pF, and a slew rate of $9 \frac{V}{\mu s}$ [4]. 
+That is due to an assumed parasitic capacitance of 10 pF (derived from [5]), and a slew rate of $9 \frac{V}{\mu s}$ [4]. 
 The SAR algorithm at most jumps by 1.65 V at a time. 
 Since the DAC has a resistance of $6.8 k\Omega$, and we need $\Delta V \exp\left(- \frac{T}{RC}\right) = 13 mV \Rightarrow 1.65\text{V} \exp\left(- \frac{T}{6.8k\Omega * 10 pF}\right)=13 mV \Rightarrow T = 0.33\mu s$ for the DAC to stabilize. 
 Additionally, the voltage follower needs $\frac{1.65 V}{9 \frac{V}{\mu s}} = 0.18\mu s$.
@@ -109,3 +109,5 @@ We should also spend more time in system integration, as the lack of seperation 
 [3] esp32_datasheet_en.pdf
 
 [4] CA3140E.pdf
+
+[5] https://www.pcbsky.com/tools/parasitic_capacitance.php
