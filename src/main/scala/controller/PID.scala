@@ -78,8 +78,8 @@ class PID(errorPeriod : Int, updatePeriod : Int) extends Module {
   res := regPResponse + regIResponse + regDResponse
 
   //Clamping between 0.05 and 0.95 to avoid relay switching too quickly
-  val minResponse = 0.05.F(config.fixedWidth.W,config.decimalWidth.BP)
-  val maxResponse = 0.95.F(config.fixedWidth.W, config.decimalWidth.BP)
+  val minResponse = config.minPWM.F(config.fixedWidth.W,config.decimalWidth.BP)
+  val maxResponse = config.maxPWM.F(config.fixedWidth.W, config.decimalWidth.BP)
 
   io.response := Mux(res < minResponse, minResponse, Mux(res > maxResponse, maxResponse, res))
 }

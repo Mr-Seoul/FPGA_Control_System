@@ -23,6 +23,9 @@ object config {
   val P = 0.5
   val I = 0.001
   val D = -5
+
+  val minPWM = 0.05
+  val maxPWM = 0.95
 }
 
 class ControllerIO() extends Bundle {
