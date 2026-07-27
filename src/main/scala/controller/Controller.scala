@@ -19,6 +19,10 @@ object config {
 
   val fixedWidth = 32
   val decimalWidth = 24
+
+  val P = 0.5
+  val I = 0.001
+  val D = -5
 }
 
 class ControllerIO() extends Bundle {
@@ -96,9 +100,9 @@ class Controller() extends Module {
     e := curTemp - targetTemp
 
     val pid = Module(new PID(config.errorPeriod, config.FPGAFrequency))
-    pid.io.P := 0.5.F(config.fixedWidth.W, config.decimalWidth.BP)
-    pid.io.I := 0.001.F(config.fixedWidth.W, config.decimalWidth.BP)
-    pid.io.D := -5.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.P := config.P.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.I := config.I.F(config.fixedWidth.W, config.decimalWidth.BP)
+    pid.io.D := config.D.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.e := e
 
     val response      = pid.io.response.asUInt
