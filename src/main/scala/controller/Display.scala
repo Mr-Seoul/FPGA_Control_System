@@ -38,7 +38,7 @@ class Display(modePeriod : Int, blinkPeriod : Int, multiplexPeriod : Int) extend
 
   val curMessage  = Wire(Vec(4, UInt(7.W)))
   val leadingChar = WireDefault(' '.U(7.W))
-  val Clamp       = Module(new Clamp(0, 99, config.width))
+  val Clamp       = Module(new Clamp(0, 99, config.fixedWidth))
   val clampIn     = WireDefault(0.S(config.fixedWidth.W))
 
   switch (regMode) {

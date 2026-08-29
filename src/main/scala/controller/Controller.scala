@@ -45,10 +45,19 @@ class ControllerIO() extends Bundle {
   val miso = Output(Bool())
 }
 
-class Controller() extends Module {
+class Controller(
+  samplingPeriod    : Int = config.samplingPeriod,
+  smootheningPeriod : Int = config.smootheningPeriod,
+  blinkPeriod       : Int = config.blinkPeriod,
+  modePeriod        : Int = config.modePeriod,
+  multiplexPeriod   : Int = config.multiplexPeriod,
+  errorPeriod       : Int = config.errorPeriod,
+  updatePeriod      : Int = config.FPGAFrequency,
+) extends Module {
+
   val io = IO(new ControllerIO())
 
-  val synchronizedReset = RegNext(RegNext(reset))
+  val synchronizedReset = RegNext(RegNext(reset, 0.B), 0.B)
 
   withReset(synchronizedReset.asAsyncReset) {
     val ADCIn      = RegNext(RegNext(io.ADCIn, 1.B), 0.B)
@@ -56,19 +65,19 @@ class Controller() extends Module {
     val enable     = RegInit(1.B)
 
     //ADC, input smoothening and converting to temperature
-    val adc    = Module(new ADC(config.ADCWidth,config.samplingPeriod))
+    val adc    = Module(new ADC(config.ADCWidth,samplingPeriod))
     adc.io.in := ADCIn
     io.DACOut := adc.io.DACOut
 
-    val inputSmoothener = Module(new Accumulator(config.smootheningPeriod, config.ADCWidth))
+    val inputSmoothener = Module(new Accumulator(smootheningPeriod, config.ADCWidth))
     inputSmoothener.io.update := adc.io.valid
     inputSmoothener.io.in     := adc.io.out
     inputSmoothener.io.clear  := 0.B
 
-    val (adcCnt, adcWrap) = Counter(1.B,config.blinkPeriod)
+    val (adcCnt, adcWrap) = Counter(1.B,blinkPeriod)
     val regADC = RegInit(0.U(8.W))
     when (adcWrap) {
-      regADC  := inputSmoothener.io.out >> (log2Ceil(config.smootheningPeriod))
+      regADC  := inputSmoothener.io.out >> (log2Ceil(smootheningPeriod))
     }
     io.ADCOut := regADC
 
@@ -77,14 +86,14 @@ class Controller() extends Module {
     val curTemp       = tempLookup.io.out
 
     //Display initialisation
-    val display = Module(new Display(config.modePeriod, config.blinkPeriod, config.multiplexPeriod))
-    val (curTempCnt, curTempWrap) = Counter(1.B,config.blinkPeriod)
+    val display = Module(new Display(modePeriod, blinkPeriod, multiplexPeriod))
+    val (curTempCnt, curTempWrap) = Counter(1.B,blinkPeriod)
     val regCurTemp = RegInit(0.S(config.fixedWidth.W))
     when (curTempWrap) {
       regCurTemp := curTemp.asSInt
     }
     display.io.currentTemp := regCurTemp
-    val (targetTempCnt, targetTempWrap) = Counter(1.B,50000000)
+    val (targetTempCnt, targetTempWrap) = Counter(1.B,blinkPeriod)
     val regTargetTemp = RegInit(0.S(config.fixedWidth.W))
     when (targetTempWrap) {
       regTargetTemp := targetTemp.asSInt
@@ -102,7 +111,7 @@ class Controller() extends Module {
     val e = Wire(FixedPoint(config.fixedWidth.W, config.decimalWidth.BP))
     e := curTemp - targetTemp
 
-    val pid = Module(new PID(config.errorPeriod, config.FPGAFrequency))
+    val pid = Module(new PID(errorPeriod, updatePeriod))
     pid.io.P := config.P.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.I := config.I.F(config.fixedWidth.W, config.decimalWidth.BP)
     pid.io.D := config.D.F(config.fixedWidth.W, config.decimalWidth.BP)

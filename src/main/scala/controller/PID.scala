@@ -74,7 +74,7 @@ class PID(errorPeriod : Int, updatePeriod : Int) extends Module {
   io.dResponse := regDResponse
 
   //Pipeline response in a register to isolate multiplication from critical path
-  val res = RegInit(0.F((2*config.fixedWidth).W,(2*config.decimalWidth).BP))
+  val res = RegInit(0.F((2*config.fixedWidth).W,config.decimalWidth.BP))
   res := regPResponse + regIResponse + regDResponse
 
   //Clamping between 0.05 and 0.95 to avoid relay switching too quickly
