@@ -60,7 +60,7 @@ class SPI_tb extends AnyFlatSpec with ChiselScalatestTester {
 
     def spiTransfer(dut: SPI, mosi: BigInt, bits: Int): Unit = {
       for (i <- bits - 1 to 0 by -1) {
-        dut.io.mosi.poke(((mosi >> i) & 1).U.asBool)
+        dut.io.mosi.poke(((mosi >> i) & 1).B)
         dut.clock.step()
         dut.io.sck.poke(1.B)
         dut.clock.step()

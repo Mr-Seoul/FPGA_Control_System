@@ -55,14 +55,22 @@ package object testSuite {
   }
 
   def clamp(valueOf: Int, min: Int, max: Int): Int = {
-    if (valueOf < min) min
-    else if (valueOf > max) max
-    else valueOf
+    if (valueOf < min) {
+      return min
+    } else if (valueOf > max) {
+      return max
+    } else {
+      return valueOf
+    }
   }
 
   def clampDouble(valueOf: Double, min: Double, max: Double): Double = {
-    if (valueOf < min) min
-    else if (valueOf > max) max
-    else valueOf
+    if (valueOf < min) {
+      return min
+    } else if (valueOf > max) {
+      return max
+    } else {
+      return valueOf
+    }
   }
 }
