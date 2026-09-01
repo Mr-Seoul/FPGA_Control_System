@@ -5,14 +5,15 @@ import chisel3.experimental.FixedPoint
 import chisel3.util._
 
 class SPIData extends Bundle {
-  val setPoint   = Output(SInt(config.fixedWidth.W))
+  //No variable length here as this spec is shared by the MCU and FPGA
+  val setPoint   = Output(SInt(32.W))
   val enable     = Output(Bool())
 
-  val temperature = Input(SInt(config.fixedWidth.W))
-  val pEffort     = Input(SInt(config.fixedWidth.W))
-  val iEffort     = Input(SInt(config.fixedWidth.W))
-  val dEffort     = Input(SInt(config.fixedWidth.W))
-  val totEffort   = Input(SInt(config.fixedWidth.W))
+  val temperature = Input(SInt(32.W))
+  val pEffort     = Input(SInt(32.W))
+  val iEffort     = Input(SInt(32.W))
+  val dEffort     = Input(SInt(32.W))
+  val totEffort   = Input(SInt(32.W))
 }
 
 class SPIIO extends Bundle {
@@ -27,7 +28,8 @@ class SPIIO extends Bundle {
 }
 
 class SPI extends Module {
-  val packetSize = config.fixedWidth*5
+  //No variable length here as this spec is shared by the MCU and FPGA
+  val packetSize = 160
 
   val io = IO(new SPIIO())
 
