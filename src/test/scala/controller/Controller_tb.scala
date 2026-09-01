@@ -36,32 +36,42 @@ class Controller_tb extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 
-  def toFixedRaw(value: Double): BigInt =
-    return value.F(config.fixedWidth.W, config.decimalWidth.BP).litValue
+  def RawToDouble(raw: BigInt): Double = {
+      return raw.toDouble / math.pow(2, config.decimalWidth)
+  }
 
-  def toSigned32(raw: BigInt): BigInt =
-    if (raw.testBit(31)) {
-      return raw - (BigInt(1) << 32)
+  def toFixedRaw(value: Double): BigInt = {
+    return value.F(config.fixedWidth.W, config.decimalWidth.BP).litValue
+  }
+
+  def toSigned32(raw: BigInt): BigInt = {
+    if (raw.testBit(config.fixedWidth - 1)) {
+      return raw - (BigInt(1) << config.fixedWidth)
     } else {
       return raw
     }
+  }
 
-  def subField(frame: BigInt, idx: Int): BigInt =
-    return toSigned32((frame >> ((4 - idx) * 32)) & ((BigInt(1) << 32) - 1))
+  def subField(frame: BigInt, idx: Int): BigInt = {
+    //The 4 is hardcoded because the frame is 5 fields (0-4)
+    return toSigned32((frame >> ((4 - idx)*config.fixedWidth)) & ((BigInt(1) << config.fixedWidth) - 1))
+  }
 
   def expectField(actual: BigInt, expected: Double, msg: String): Unit = {
     val expectedRaw = toFixedRaw(expected)
     assert((actual - expectedRaw).abs <= 8, s"$msg: expected=$expected (raw=$expectedRaw) actual raw=$actual")
   }
 
-  def quantize(value: Double): Double =
+  def quantize(value: Double): Double = {
     return toFixedRaw(value).toDouble / (1L << config.decimalWidth)
+  }
 
-  def holdADC(dut: Controller, code: BigInt, cycles: Int): Unit =
+  def holdADC(dut: Controller, code: BigInt, cycles: Int): Unit = {
     for (i <- 0 until cycles) {
       dut.io.ADCIn.poke((code > dut.io.DACOut.peekInt()).B)
       dut.clock.step()
     }
+  }
 
   def initSPI(dut: Controller, code: BigInt): Unit = {
     dut.io.csN.poke(1.B)
@@ -117,7 +127,7 @@ class Controller_tb extends AnyFlatSpec with ChiselScalatestTester {
           holdADC(dut, code, targetCycle)
           val frame = spiTransceive(dut, code, 0, packetSize)
 
-          assert(subField(frame, 0) == lookupTable(code), s"code=$code expected=${lookupTable(code)} actual=${subField(frame, 0)}")
+          expectField(subField(frame, 0),RawToDouble(lookupTable(code)),s"code ($code)")
         }
       }
     }
@@ -149,9 +159,10 @@ class Controller_tb extends AnyFlatSpec with ChiselScalatestTester {
               resetDUT(dut, maxTimeout)
               initSPI(dut, code)
 
-              val curTemp = lookupTable(code).toDouble / math.pow(2, config.decimalWidth)
+              val curTemp = RawToDouble(lookupTable(code))
               val e = curTemp - setPoint
 
+              //These fields are hardcoded as in the SPI Module (decided by the spec to interact with a potential MCU)
               val setPointRaw = toFixedRaw(setPoint) & ((BigInt(1) << 32) - 1)
               val frame = (setPointRaw << 128) | (BigInt(1) << 96)
 
@@ -162,20 +173,21 @@ class Controller_tb extends AnyFlatSpec with ChiselScalatestTester {
               val qD = quantize(config.D)
               var curFrame = spiTransceive(dut, code, frame, packetSize)
 
-              //UpdatePeriod chosen so after this frame, I still is equal to zero
+              //UpdatePeriod chosen so after this frame, Ieffort still is equal to zero
               expectField(subField(curFrame, 0), curTemp, "temperature")
               expectField(subField(curFrame, 1), qP*e, "pEffort")
               expectField(subField(curFrame, 2), 0.0, "iEffort")
               expectField(subField(curFrame, 3), qD*e, "dEffort")
 
-              val curCycle = 2 * transceiveCycles
+              val curCycle = 2*transceiveCycles
               val targetCycle = errorPeriod*updatePeriod + updatePeriod / 2
               holdADC(dut, code, targetCycle - curCycle)
 
               curFrame = spiTransceive(dut, code, frame, packetSize)
               val expectedTot = clampDouble(qP*e + qI*errorPeriod*e, config.minPWM, config.maxPWM)
 
-              //After these cycles, the error accumulator is full and due to constant error, the I is maxed out.
+              //After these cycles, the error accumulator is full and due to constant error, the Ieffort is equal to errorPeriod*e.
+              //Due to constant error, the Deffort is equal to zero.
               expectField(subField(curFrame, 1), qP*e, "pEffort")
               expectField(subField(curFrame, 2), qI*errorPeriod*e, "iEffort")
               expectField(subField(curFrame, 3), 0.0, "dEffort")
