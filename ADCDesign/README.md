@@ -10,7 +10,7 @@ Available comparators
 
 The comparator used was a LM393N. 
 While the LM311N is much faster, it is also a dual supply input comparator.
-Without an easy -12V supply, we would need to complicate the design even further, which is not worth the increased sampling rate due to the slow response of the system.
+Without an easy -12V supply, we would need to complicate the design even further, which is not worth the increased sampling rate due to the slow response of the system anyways.
 
 We decided on 8 bits due to the sensitivity of the comparator and the FPGA pinout.
 The FPGA has 8 data pins per 2 pmods on the same level. Going above 8 bits would make the PCB more complicated.
@@ -90,15 +90,15 @@ Testing then revealed very strong linearity on the ADC, never being off by more 
 
 ## Linearity and noise
 As noted before, the ADC is very linear, never being off by more than 2mV. 
-Additionally, the noise at 50kHz was near zero for a stable input voltage, which shows that the previous sampling rate calculation was valid.
+Additionally, the noise at 50kHz was near zero for a stable reference voltage, however it did fail during system integration. Due to lack of time, we were not able to find and fix the root cause, but we assume it had to do with the lack of sample and hold, in combination with relay noise.
 
 ## Comparison to MCU
-The MCU, even with multisampling, can be quite noisy. Our solution on the other hand is much more stable. 
+The MCU, even with multisampling with an idle voltage, can be quite noisy. Our solution on the other hand is much more stable. 
 In short, we traded resolution for accuracy and stability, which we feel is warranted for the project as noise fundamentally makes the PID system less effective.
 
 # Post Mortem
 Next time, we should introduce voltage regulators to keep the ADC power supply stable. 
-We should also spend more time in system integration, as the lack of seperation between the power hungry coolers, fans, etc. and the sensitive components added significant noise to the ADC readings.
+We should also spend more time in system integration, as the lack of separation between the power hungry coolers, fans, etc. and the sensitive components resulted in the ADC performing poorly, with too little time to debug / improve the design.
 
 # Sources:
 
