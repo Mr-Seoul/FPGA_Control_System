@@ -46,7 +46,7 @@ A resistor was put in series with the thermister, which we optimised to give the
 
 We first built the DAC and tested it.
 When we were happy with the result (solid linearity and limited error), we installed the comparator and voltage followers. 
-We then documented the performance (ADC code) for every 100 mV (supplied via a power supply with +/- 5mV error).
+We then documented the performance (ADC code) for every 100 mV (supplied via a power supply with +/- 5mV error, hence we cannot say anything about individual codes).
 After we validate that performance, we moved to system integration with our group members.
 
 We also tested our PID simulation script (read the PIDAnalysis folder). 
@@ -57,7 +57,7 @@ In either case, the initial test was used to adjust the P,I,D values for a more 
 # Results
 ![Iteration5.png](ADCDesign/Iteration5.png)
 
-The ADC tests well (see README in the ADCDesign folder) and is extremely convenient to use as it can plug directly into the FPGA. It has 2.5mV of error, near 0mV offset, and is highly linear. 
+The ADC tests well (see README in the ADCDesign folder) and is extremely convenient to use as it can plug directly into the FPGA. It has around 2.5mV of error (derived from DAC), and is highly linear (refer to testing limitations in the ADC Design folder). 
 It does however struggle heavily when the relay is connected and starts switching, significantly getting more noise than during testing.
 We were unable to fix the relay noise during the course, but a further revision could make the project viable.
 
