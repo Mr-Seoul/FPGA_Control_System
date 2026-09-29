@@ -83,13 +83,13 @@ This shows that the DAC is always within 2.5 mV, which is perfect for our use ca
 We installed the LM393N. After doing testing, we noticed severe non-linearity despite the previous validation of the DAC. That is likely that the couple of microAmps the lm393 draws distortes the DAC, hence we installed some voltage follower op-amps to isolate the DAC.
 ![Iteration5.png](Iteration5.png)
 
-Testing then revealed very strong linearity on the ADC, never skipping any codes.
+Unfortunately, we did not have a power supply accurate enough to test individual codes, as it only showed every 10 mV (+/- 5mV). We therefore tested the overall trend every 100mV. It showed that every step was around where it was expected, with some error from the sweep itself.
 ![ADCLinearity.png](ADCLinearity.png)
 
 # Final Result
 
 ## Linearity and noise
-As noted before, the ADC is very linear, never skipping any codes. 
+As noted before, the ADC is very linear. 
 Additionally, the noise at 50kHz was near zero for a stable reference voltage, however it did fail during system integration. Due to lack of time, we were not able to find and fix the root cause, but we assume it had to do with the lack of sample and hold, in combination with relay noise.
 
 ## Comparison to MCU
